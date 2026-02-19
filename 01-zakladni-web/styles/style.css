@@ -1,0 +1,30 @@
+/* 
+základní syntaxy  CSS
+
+selector {
+    vlastnosti-1: hodnota;
+    vlastnosti-2: hodnota;
+    vlastnosti-3: hodnota;
+    vlastnosti-4: hodnota;
+    vlastnosti-5: hodnota;
+    vlastnosti-N: hodnota; POSLEDNI
+}
+        zavorky vymezuji blok toho selectoru 
+
+
+
+ */
+
+body {
+    background-color:#a6ebea92;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
+}
+
+
+p {
+    /* font-family:; */
+    font-size: 18px;
+}
+
+
