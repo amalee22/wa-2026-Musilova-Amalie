@@ -16,9 +16,21 @@ selector {
  */
 
 body {
-    background-color:#a6ebea92;
+    background-color:#a6b6eb72;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 
+}
+
+
+h1 {
+    font-size: 38px;
+   
+    
+}
+
+
+h1,h2{
+    color: #201d7599; /*aplikuje se na všechny tagy*/
 }
 
 
@@ -26,5 +38,90 @@ p {
     /* font-family:; */
     font-size: 18px;
 }
+
+
+
+
+header, footer{
+    background-color:rgba(123, 109, 203, 0.473) ;
+    padding: 0.4rem 1rem; /*1rem je 16px - JDE TO PO SMĚRU HODINOVÝCH RUČIČEK ^>V<*/
+    /*border: 1px solid #201d75da;*/
+
+}
+
+
+
+footer p { /*zanoření jen do toho footeru...*/
+     margin: unset;
+
+}
+
+
+.page-wrapper {
+        width: 90%;
+        margin: 0 auto; /* zarovnání na střed */
+
+
+}
+    
+
+
+nav ul{ /*celý seznam*/
+    display: flex;
+    list-style-type: none;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0;
+
+
+}
+
+nav li{
+    flex-grow:1;
+    flex-shrink:1;
+    flex-basis: 100px;
+
+    /**flex/
+
+}
+
+
+
+nav a { /*NAVIGACE*/
+    display:block;
+    background-color: #201d75a1;
+    color:antiquewhite;
+    text-decoration: none;
+    padding: 0.3rem;
+    border-radius:10px;
+    white-space: nowrap;
+
+
+}
+
+
+.grid-container{
+        display: grid;
+        /*grid-template-columns: 4fr 2fr;*/
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+
+
+}
+
+
+
+.card {
+        background-color:#817fbc51;
+        padding: 1rem;
+        border-radius: 20px 60px;   /*ZAKULACENÍ RÁMEČKŮ*/
+        margin-top: 1rem;
+        border: 1px dashed #201d75da;
+
+}
+
+
+
+
 
 
