@@ -5,61 +5,17 @@
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
    
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">   </script>
-
-<title> WEB 01 - Musilová</title>
-<style type="text/tailwindcss"> 
-@theme {
-        --color-myPrimaryColor: #142d4c;
-}
-@layer base{
-        h2{
-                @apply text-2xl  mt-10 text-indigo-950 
-        }
-
-        p{
-                @apply text-base font-serif mt-2
-        }
-
-        .card{
-                @apply bg-teal-700 p-6 rounded-2xl
-        }
-
-        nav li{
-                @apply
-                flex-grow basis-full sm:basis-[100px]
-        }
-
-        nav a {
-
-                 @apply 
-                 block
-                 bg-teal-500
-                text-white
-                rounded-md
-                py-2
-                px-4
-                text-center
-                no-underline
-                whitespace-nowrap
-                hover:bg-teal-700
-
-
-
-        }
-}
-
-</style>
-
-        </head>
-<body class="bg-teal-600 text-gray-200">
-        <div class="page-wrapper w-[95%] mx-auto lg:w-[80%] ">
-                <header class="bg-myPrimaryColor px-4 py-6">
-                    <h1 class="text-4xl"> WA 2026 - první web</h1>
+          <link rel="stylesheet" href="styles/style.css">
+     <title>Web 01 - Amálie Musilová</title>
+</head>
+<body>
+        <div class="page-wrapper">
+                <header>
+                    <h1> WA 2026 - první web</h1>
                 </header>
                
-                <nav class="my-4">
-                    <ul class="flex gap-3 list-none p-0 ">
+                <nav>
+                    <ul>
                         <li><a href="index.html">Home</a></li>
                         <li><a href="#">O nás</a></li>
                         <li><a href="#">Kontakt</a></li>
@@ -69,7 +25,7 @@
 
 
                 <main>
-                    <section class="grid-container grid gap-2 grid-cols-[repeat(auto-fit,minmax(250px,2fr))]">
+                    <section class="grid-container">
                         <article class="card">
                                 <h2>Titulek článku 1</h2>
                                 <p><b>In the year of Our Lord 1403, the Holy Roman Empire was in ruins. In the wake of the Black Death came new calamities. While two popes vied for power, the heir to the throne of the Holy Roman Empire, Wenceslaus IV, was more occupied with drinking, hunting and dallying with chambermaids than with affairs of state, and soon chaos was rife. So the German King Rupert III laid claim to the Imperial crown, the nobles fell to squabbling and hatching plots, and reprobates of every kind crawled out from under rocks and set to pillaging. Preachers proclaimed the End of the World was nigh…!</b></p>
@@ -114,7 +70,7 @@
                     </section>
                 </main>
 
-<footer class="bg-myPrimaryColor px-4 py-6 text-center">
+<footer>
     <p>&copy; WA&nbsp; 2026 - Amálie Musilová</p>
 </footer>
 
