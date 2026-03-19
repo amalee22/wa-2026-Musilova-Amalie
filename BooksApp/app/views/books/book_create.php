@@ -95,6 +95,15 @@
 
 
 
+                     <div>
+                        <label >Obrázky (můžete nahrát více)</label>
+                        <label>
+                            <span>Klikni pro výběr souborů</span>
+                            <span>JPG / PNG / WebP – více souborů najednou</span>
+                            <input type="file" id="images" name="images[]" multiple accept="image/*" class="hidden">
+                        </label>
+                    </div>
+
 
 
                                         <div>
