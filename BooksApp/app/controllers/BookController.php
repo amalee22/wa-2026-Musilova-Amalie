@@ -31,7 +31,7 @@ class BookController {
 
             if ($bookModel->create($data)) {
                 // Po úspěšném uložení přesměrujeme na seznam
-                header('Location: /BooksApp/public/index.php?url=book/index');
+                header('Location: index.php?url=book/index');
             } else {
                 echo "Chyba při ukládání knihy.";
             }
