@@ -28,4 +28,13 @@ class Book {
 
         return $stmt->execute();
     }
+
+        // Metoda pro načtení všech knih
+    public function getAll() {
+        $sql = "SELECT * FROM books ORDER BY id DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

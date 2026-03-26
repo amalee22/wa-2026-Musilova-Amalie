@@ -1,13 +1,14 @@
 <?php 
 class BookController {
 
-    public function index() {
-        require_once '../app/views/books/books_list.php';
-    }
+    
 
-    // Metoda pro zobrazení formuláře
-    public function create() {
-        require_once '../app/views/books/book_create.php';
+   public function index() {
+        require_once '../app/models/Book.php';
+        $bookModel = new Book();
+        $books = $bookModel->getAll();
+        
+        require_once '../app/views/books/books_list.php';
     }
 
     // Metoda pro uložení dat
