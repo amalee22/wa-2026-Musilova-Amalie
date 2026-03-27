@@ -14,11 +14,11 @@
         <header> 
                 <h1>Aplikace Knihovna</h1>
 
-                <nav>
-                         <ul>
-                                 <li><a href="index.php"> Seznam knih (domů)</a> </li>
-                                 <li><a href="index.php?url=book/create">Přidat novou knihu</a></li>
-                        </ul>
+               <nav>
+                              <ul>    
+                                     <li><a href="<?= BASE_URL ?>/index.php">Seznam knih (Domů)</a></li>
+                                     <li><a href="<?= BASE_URL ?>/index.php?url=book/create">Přidat novou knihu</a></li>
+                            </ul>
                 </nav>
         </header>
 
