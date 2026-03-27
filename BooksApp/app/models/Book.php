@@ -2,9 +2,10 @@
 require_once 'Database.php';
 
 class Book {
-    private $db;
+    //definice, že proměnná $db musí být vždy instancí třídy PDO
+    private PDO $db; //je dobré úvádět ten PDO princip
 
-    public function __construct() {
+    public function __construct() { //to co začíná _ znamená něco striktně pro php
         $database = new Database();
         $this->db = $database->getConnection();
     }
@@ -25,15 +26,23 @@ class Book {
         $stmt->bindParam(':price', $data['price']);
         $stmt->bindParam(':link', $data['link']);
         $stmt->bindParam(':description', $data['description']);
+        // $stmt->bindParam(':images', $data['images']);
+
+//on používá string $title; atd. a na konci :bool !!!!!!!!!!!!!!!!! 
+//a až potom dělá definování $sql
 
         return $stmt->execute();
     }
+
 
         // Metoda pro načtení všech knih
     public function getAll() {
         $sql = "SELECT * FROM books ORDER BY id DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
+
+
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 //dynamické zjištění základní adresy aplikace
 $baseDir = str_replace('\\','/',dirname($_SERVER['SCRIPT_NAME']));
 define('BASE_URL', $baseDir); 
-echo($baseDir);
+//echo($baseDir);
 
 
 require_once '../core/app.php';

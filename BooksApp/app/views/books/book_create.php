@@ -26,7 +26,7 @@
                     <div>
                          <div>   
                                 <label for="author"> Autor knihy <span>*</span> </label>
-                                <input type="text" id="author" name="author" placeholder="Příjmení jméno" required>
+                                <input type="text" id="author" name="author" placeholder="Jméno Příjmení" required>
                          </div>
                          
                     </div>
