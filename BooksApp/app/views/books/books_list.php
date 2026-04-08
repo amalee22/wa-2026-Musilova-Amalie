@@ -1,70 +1,84 @@
 <!DOCTYPE html>
-
 <html lang='cs'>
-
 <head>  
-        <meta charset="UTF-8">
-        <meta name="viewpoint" content="width=device-width, initial-scale=1.0">
-
-        <title> Knihovna - Seznam knih </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veřejná Knihovna</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased h-screen flex overflow-hidden">
 
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex shadow-2xl z-10">
+        <div class="h-20 flex items-center px-8 border-b border-slate-800">
+            <h1 class="text-2xl font-bold text-white tracking-wider">KNIHOVNA<span class="text-teal-500">.</span></h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <a href="<?= BASE_URL ?>/index.php" class="flex items-center gap-3 px-4 py-3 bg-teal-500/10 text-teal-400 rounded-xl font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Veřejný katalog
+            </a>
+            <a href="<?= BASE_URL ?>/index.php?url=book/create" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl font-medium transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Přidat záznam
+            </a>
+        </nav>
+        <div class="p-6 border-t border-slate-800 text-sm text-slate-500">
+            &copy; WA 2026 Amálie Musilová 
+        </div>
+    </aside>
 
-<body>
-        <header> 
-                <h1>Aplikace Knihovna</h1>
-
-               <nav>
-                              <ul>    
-                                     <li><a href="<?= BASE_URL ?>/index.php">Seznam knih (Domů)</a></li>
-                                     <li><a href="<?= BASE_URL ?>/index.php?url=book/create">Přidat novou knihu</a></li>
-                            </ul>
-                </nav>
+    <main class="flex-1 overflow-y-auto p-8 lg:p-12">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-800">Katalog titulů</h2>
+                <p class="text-slate-500 mt-1">Procházejte knihy přidané komunitou nebo přispějte vlastními objevy.</p>
+            </div>
+            <a href="<?= BASE_URL ?>/index.php?url=book/create" class="md:hidden bg-teal-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm">Přidat</a>
         </header>
 
+        <?php if (isset($_SESSION['success_msg'])): ?>
+            <div class="bg-teal-50 border-l-4 border-teal-500 text-teal-800 p-4 mb-8 rounded-r-lg shadow-sm">
+                <?= htmlspecialchars($_SESSION['success_msg']) ?>
+            </div>
+            <?php unset($_SESSION['success_msg']); ?>
+        <?php endif; ?>
 
-
-
-        <main>
-                <h2>Dostupné knihy</h2>
-
-                <?php if (!empty($books)): ?>
-        <table border="1" cellpadding="10" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Název</th>
-                    <th>Autor</th>
-                    <th>Rok</th>
-                    <th>ISBN</th>
-                    <th>Cena</th>
-                </tr>
-            </thead>
-            <tbody>
+        <?php if (!empty($books)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <?php foreach ($books as $book): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($book['title']) ?></td>
-                        <td><?= htmlspecialchars($book['author']) ?></td>
-                        <td><?= htmlspecialchars($book['year']) ?></td>
-                        <td><?= htmlspecialchars($book['isbn']) ?></td>
-                        <td><?= htmlspecialchars($book['price']) ?> Kč</td>
-                    </tr>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold uppercase tracking-wider">
+                                <?= htmlspecialchars($book['year']) ?>
+                            </span>
+                            <span class="text-teal-600 font-bold"><?= htmlspecialchars($book['price']) ?> Kč</span>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-slate-800 mb-1 leading-tight group-hover:text-teal-600 transition-colors">
+                            <?= htmlspecialchars($book['title']) ?>
+                        </h3>
+                        <p class="text-slate-500 text-sm mb-6 flex-1">
+                            <?= htmlspecialchars($book['author']) ?>
+                        </p>
+
+                        <div class="flex gap-2 pt-4 border-t border-slate-50">
+                            <a href="<?= BASE_URL ?>/index.php?url=book/show/<?= $book['id'] ?>" class="flex-1 bg-slate-50 hover:bg-teal-50 text-slate-600 hover:text-teal-700 text-center py-2 rounded-xl font-medium text-sm transition-colors">Detail</a>
+                            <a href="<?= BASE_URL ?>/index.php?url=book/edit/<?= $book['id'] ?>" class="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-600 text-center py-2 rounded-xl font-medium text-sm transition-colors">Upravit</a>
+                            <a href="<?= BASE_URL ?>/index.php?url=book/delete/<?= $book['id'] ?>" onclick="return confirm('Opravdu smazat?')" class="w-10 flex items-center justify-center bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </a>
+                        </div>
+                    </div>
                 <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p>Zatím tu nejsou žádné knihy. Zkuste nějakou přidat!</p>
-    <?php endif; ?>
-
-            
-        </main>
-
-        <footer>
-            <p>&copy; WA 2026 - Výukový projekt</p>
-        </footer>
-
+            </div>
+        <?php else: ?>
+            <div class="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-dashed border-slate-300">
+                <p class="text-slate-400 text-lg mb-4">Zatím tu nic není.</p>
+                <a href="<?= BASE_URL ?>/index.php?url=book/create" class="text-teal-600 font-medium hover:underline">Přidejte první knihu do katalogu</a>
+            </div>
+        <?php endif; ?>
+    </main>
 
 </body>
-
-
-
 </html>
