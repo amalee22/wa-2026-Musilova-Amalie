@@ -49,6 +49,12 @@
                         <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-5">Galerie</p>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                           
+    <?php foreach ($images as $img): ?>
+        <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" target="_blank" class="block aspect-video rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md hover:border-teal-300 transition-all">
+            <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" alt="Náhled" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+        </a>
+    <?php endforeach; ?>
+
                         </div>
                     </div>
                 <?php endif; ?>

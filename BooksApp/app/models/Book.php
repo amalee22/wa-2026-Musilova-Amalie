@@ -11,12 +11,11 @@ class Book {
     }
 
     public function create($data) {
-        $sql = "INSERT INTO books (title, author, isbn, category, subcategory, year, price, link, description) 
-                VALUES (:title, :author, :isbn, :category, :subcategory, :year, :price, :link, :description)";
+        $sql = "INSERT INTO books (title, author, isbn, category, subcategory, year, price, link, description, images) 
+                VALUES (:title, :author, :isbn, :category, :subcategory, :year, :price, :link, :description, :images)";
         
         $stmt = $this->db->prepare($sql);
 
-        // Propojení parametrů (ochrana proti SQL injection)
         $stmt->bindParam(':title', $data['title']);
         $stmt->bindParam(':author', $data['author']);
         $stmt->bindParam(':isbn', $data['isbn']);
@@ -26,10 +25,10 @@ class Book {
         $stmt->bindParam(':price', $data['price']);
         $stmt->bindParam(':link', $data['link']);
         $stmt->bindParam(':description', $data['description']);
-        // $stmt->bindParam(':images', $data['images']);
-
-//on používá string $title; atd. a na konci :bool !!!!!!!!!!!!!!!!! 
-//a až potom dělá definování $sql
+        
+        // Přidáno uložení obrázků ve formátu JSON
+        $imagesJson = json_encode($data['images'] ?? []);
+        $stmt->bindParam(':images', $imagesJson);
 
         return $stmt->execute();
     }

@@ -72,6 +72,7 @@ class BookController {
             $database = new Database();
             $db = $database->getConnection();
 
+            // SPRÁVNĚ POSKLÁDANÉ POLE (už obsahuje i images)
             $bookData = [
                 'title' => $title,
                 'author' => $author,
@@ -81,12 +82,11 @@ class BookController {
                 'price' => $price,
                 'isbn' => $isbn,
                 'description' => $description,
-                'link' => $link
+                'link' => $link,
+                'images' => $uploadedImages 
             ];
 
-            // Tady by správně mělo být DTO z další lekce, ale zatím necháváme takto
             $bookModel = new Book($db);
-            // U create ještě učitel nepředělal metodu na pole images, tak to zatím ignorujeme v SQL
             $isSaved = $bookModel->create($bookData);
 
             if ($isSaved) {

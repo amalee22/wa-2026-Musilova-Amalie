@@ -67,7 +67,7 @@
                     <div class="flex flex-wrap gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                         <?php foreach ($existingImages as $img): ?>
                             <div class="w-24 h-24 overflow-hidden rounded-lg border border-slate-300 shadow-sm relative group">
-                              
+                              <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" alt="Obrázek" class="w-full h-full object-cover">
                             </div>
                         <?php endforeach; ?>
                     </div>
