@@ -1,22 +1,6 @@
-<!DOCTYPE html>
-<html lang='cs'>
-<head>  
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail - <?= htmlspecialchars($book['title']) ?></title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<?php require_once '../app/views/layout/header.php'; ?>
 
-    <div class="max-w-3xl mx-auto w-full px-6 pt-12 pb-6">
-        <a href="<?= BASE_URL ?>/index.php" class="inline-flex items-center gap-2 text-slate-400 hover:text-teal-600 font-medium transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Zpět do katalogu
-        </a>
-    </div>
-
-    <main class="flex-1 w-full max-w-3xl mx-auto px-6 pb-12">
-        <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50">
+        <div class="max-w-4xl mx-auto bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/50">
             
             <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-10 sm:p-12 text-center">
                 <span class="inline-block px-4 py-1.5 bg-teal-500/20 text-teal-300 rounded-full text-xs font-bold tracking-widest uppercase mb-6 border border-teal-500/20">
@@ -37,7 +21,7 @@
                         <p class="text-slate-700 font-medium text-lg"><?= htmlspecialchars($book['year']) ?></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1.5">Platforma / ISBN</p>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1.5">Platforma / Kód</p>
                         <p class="text-slate-700 font-medium text-lg"><?= htmlspecialchars($book['isbn'] ?? 'Není uvedeno') ?></p>
                     </div>
                     <div>
@@ -72,6 +56,5 @@
                 </div>
             </div>
         </div>
-    </main>
-</body>
-</html>
+
+<?php require_once '../app/views/layout/footer.php'; ?>

@@ -1,23 +1,6 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upravit - <?= htmlspecialchars($book['title']) ?></title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<?php require_once '../app/views/layout/header.php'; ?>
 
-    <div class="max-w-3xl mx-auto w-full px-6 pt-12 pb-6 flex justify-between items-center">
-        <a href="<?= BASE_URL ?>/index.php" class="inline-flex items-center gap-2 text-slate-400 hover:text-teal-600 font-medium transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Zpět do katalogu
-        </a>
-        <span class="text-sm font-medium text-slate-400">Režim úpravy</span>
-    </div>
-
-    <main class="flex-1 w-full max-w-3xl mx-auto px-6 pb-12">
-        <div class="bg-white p-10 sm:p-14 rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100">
+        <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100">
             
             <div class="mb-10 text-center">
                 <h2 class="text-3xl font-semibold text-slate-800 mb-2">Upravit záznam</h2>
@@ -91,6 +74,5 @@
 
             </form>
         </div>
-    </main>
-</body>
-</html>
+
+<?php require_once '../app/views/layout/footer.php'; ?>

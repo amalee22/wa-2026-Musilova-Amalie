@@ -1,33 +1,5 @@
-<!DOCTYPE html>
-<html lang='cs'>
-<head>  
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veřejná Knihovna</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased h-screen flex overflow-hidden">
+<?php require_once '../app/views/layout/header.php'; ?>
 
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex shadow-2xl z-10">
-        <div class="h-20 flex items-center px-8 border-b border-slate-800">
-            <h1 class="text-2xl font-bold text-white tracking-wider">KNIHOVNA<span class="text-teal-500">.</span></h1>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <a href="<?= BASE_URL ?>/index.php" class="flex items-center gap-3 px-4 py-3 bg-teal-500/10 text-teal-400 rounded-xl font-medium transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                Veřejný katalog
-            </a>
-            <a href="<?= BASE_URL ?>/index.php?url=book/create" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl font-medium transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Přidat záznam
-            </a>
-        </nav>
-        <div class="p-6 border-t border-slate-800 text-sm text-slate-500">
-            &copy; WA 2026 Amálie Musilová 
-        </div>
-    </aside>
-
-    <main class="flex-1 overflow-y-auto p-8 lg:p-12">
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h2 class="text-3xl font-bold text-slate-800">Katalog titulů</h2>
@@ -36,12 +8,7 @@
             <a href="<?= BASE_URL ?>/index.php?url=book/create" class="md:hidden bg-teal-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm">Přidat</a>
         </header>
 
-        <?php if (isset($_SESSION['success_msg'])): ?>
-            <div class="bg-teal-50 border-l-4 border-teal-500 text-teal-800 p-4 mb-8 rounded-r-lg shadow-sm">
-                <?= htmlspecialchars($_SESSION['success_msg']) ?>
-            </div>
-            <?php unset($_SESSION['success_msg']); ?>
-        <?php endif; ?>
+
 
         <?php if (!empty($books)): ?>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -78,7 +45,5 @@
                 <a href="<?= BASE_URL ?>/index.php?url=book/create" class="text-teal-600 font-medium hover:underline">Přidejte první knihu do katalogu</a>
             </div>
         <?php endif; ?>
-    </main>
 
-</body>
-</html>
+<?php require_once '../app/views/layout/footer.php'; ?>
