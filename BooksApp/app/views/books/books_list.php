@@ -3,19 +3,33 @@
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h2 class="text-3xl font-bold text-slate-800">Katalog titulů</h2>
-                <p class="text-slate-500 mt-1">Procházejte knihy přidané komunitou nebo přispějte vlastními objevy.</p>
+                <p class="text-slate-500 mt-1">Procházejte tituly přidané komunitou nebo přispějte vlastními objevy.</p>
             </div>
             <a href="<?= BASE_URL ?>/index.php?url=book/create" class="md:hidden bg-teal-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm">Přidat</a>
         </header>
 
-
-
         <?php if (!empty($books)): ?>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <?php foreach ($books as $book): ?>
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full">
+                    <?php 
+                        // Rozbalíme obrázky a získáme ten první (náhledový)
+                        $images = json_decode($book['images'] ?? '[]', true);
+                        $coverImage = !empty($images) ? $images[0] : null;
+                    ?>
+                    
+                    <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full">
                         
-                        <div class="flex justify-between items-start mb-4">
+                        <div class="w-full h-48 mb-5 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 relative">
+                            <?php if ($coverImage): ?>
+                                <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($coverImage) ?>" alt="Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="flex justify-between items-start mb-3">
                             <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold uppercase tracking-wider">
                                 <?= htmlspecialchars($book['year']) ?>
                             </span>
@@ -42,7 +56,7 @@
         <?php else: ?>
             <div class="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-dashed border-slate-300">
                 <p class="text-slate-400 text-lg mb-4">Zatím tu nic není.</p>
-                <a href="<?= BASE_URL ?>/index.php?url=book/create" class="text-teal-600 font-medium hover:underline">Přidejte první knihu do katalogu</a>
+                <a href="<?= BASE_URL ?>/index.php?url=book/create" class="text-teal-600 font-medium hover:underline">Přidejte první záznam do katalogu</a>
             </div>
         <?php endif; ?>
 

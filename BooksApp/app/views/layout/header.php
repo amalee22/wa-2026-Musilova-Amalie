@@ -28,32 +28,27 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto p-6 lg:p-12">
-        <main class="flex-1 overflow-y-auto p-6 lg:p-12">
-        
-        <?php if (isset($_SESSION['messages']) && !empty($_SESSION['messages'])): ?>
-            <div class="max-w-4xl mx-auto mb-8">
-                
-                <?php foreach ($_SESSION['messages'] as $type => $messages): ?>
-                    <?php 
-                        // Určení Tailwind barev podle typu zprávy (Calm Aesthetic)
-                        $bgClass = 'bg-slate-50'; $borderClass = 'border-slate-500'; $textClass = 'text-slate-800';
-                        
-                        if ($type === 'success') { $bgClass = 'bg-teal-50'; $borderClass = 'border-teal-500'; $textClass = 'text-teal-800'; }
-                        if ($type === 'error') { $bgClass = 'bg-rose-50'; $borderClass = 'border-rose-500'; $textClass = 'text-rose-800'; }
-                        if ($type === 'notice') { $bgClass = 'bg-amber-50'; $borderClass = 'border-amber-500'; $textClass = 'text-amber-800'; }
-                    ?>
-                    
-                    <?php foreach ($messages as $message): ?>
-                        <div class="<?= $bgClass ?> border-l-4 <?= $borderClass ?> <?= $textClass ?> p-4 mb-4 rounded-r-lg shadow-sm">
-                            <strong><?= htmlspecialchars($message) ?></strong>
-                        </div>
+
+        <div class="max-w-4xl mx-auto mb-8">
+            <?php if (isset($_SESSION['messages']) && !empty($_SESSION['messages'])): ?>
+                <div class="space-y-3">
+                    <?php foreach ($_SESSION['messages'] as $type => $messages): ?>
+                        <?php 
+                            // Stylování zachovávající náš "Calm Aesthetic" design
+                            $styles = [
+                                'success' => 'bg-teal-50 border-teal-500 text-teal-800',
+                                'error'   => 'bg-rose-50 border-rose-500 text-rose-800',
+                                'notice'  => 'bg-amber-50 border-amber-500 text-amber-800',
+                            ];
+                            $style = $styles[$type] ?? 'bg-slate-50 border-slate-500 text-slate-800';
+                        ?>
+                        <?php foreach ($messages as $message): ?>
+                            <div class="<?= $style ?> border-l-4 p-4 rounded-r-lg shadow-sm">
+                                <p class="font-medium text-sm"><?= htmlspecialchars($message) ?></p>
+                            </div>
+                        <?php endforeach; ?>
                     <?php endforeach; ?>
-                <?php endforeach; ?>
-                
-            </div>
-            
-            <?php 
-                // ZÁSADNÍ KROK: Vymazání zpráv, aby se nezobrazovaly při obnovení stránky
-                unset($_SESSION['messages']); 
-            ?>
-        <?php endif; ?>
+                    <?php unset($_SESSION['messages']); ?>
+                </div>
+            <?php endif; ?>
+        </div>

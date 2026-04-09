@@ -58,21 +58,50 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-slate-600 mb-2">Obrázky (můžete nahrát více)</label>
-                    <label class="w-full flex flex-col items-center px-4 py-8 bg-slate-50/50 text-slate-500 rounded-xl ring-1 ring-inset ring-slate-200 cursor-pointer hover:bg-slate-100 hover:ring-teal-300 transition-all">
-                        <span class="font-medium text-slate-600">Klikni pro výběr souborů</span>
-                        <span class="text-sm text-slate-400 mt-1">JPG / PNG / WebP</span>
-                        <input type="file" id="images" name="images[]" multiple accept="image/*" class="hidden">
-                    </label>
+                    <div class="w-full">
+                        <label for="images" class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50/50 hover:bg-slate-100 hover:border-teal-400 transition-colors">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                <span id="file-title" class="text-sm text-slate-500 font-semibold">Klikni pro výběr souborů</span>
+                                <span id="file-info" class="text-xs text-slate-400 mt-1 text-center px-4">JPG, PNG, WebP</span>
+                            </div>
+                            <input type="file" id="images" name="images[]" multiple accept="image/*" class="hidden">
+                        </label>
+                    </div>
                 </div>
 
                 <div class="pt-8 mt-8 border-t border-slate-100 flex items-center justify-between gap-4">
                     <a href="<?= BASE_URL ?>/index.php" class="text-slate-400 hover:text-slate-700 font-medium px-2 py-2 transition-colors">Zrušit</a>
-                    <button type="submit" class="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-10 py-3.5 rounded-2xl shadow-lg shadow-teal-600/30 hover:shadow-teal-600/40 hover:-translate-y-0.5 transition-all">
+                    <button type="submit" class="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-10 py-3.5 rounded-2xl shadow-lg shadow-teal-600/30 hover:-translate-y-0.5 transition-all">
                         Uložit do databáze
                     </button>
                 </div>
 
             </form>
         </div>
+
+        <script>
+            const fileInput = document.getElementById('images');
+            const fileTitle = document.getElementById('file-title');
+            const fileInfo = document.getElementById('file-info');
+
+            fileInput.addEventListener('change', function(event) {
+                const files = event.target.files;
+                
+                if (files.length === 0) {
+                    fileTitle.textContent = 'Klikni pro výběr souborů';
+                    fileTitle.className = 'text-sm text-slate-500 font-semibold';
+                    fileInfo.textContent = 'JPG, PNG, WebP';
+                } else if (files.length === 1) {
+                    fileTitle.textContent = 'Soubor připraven';
+                    fileTitle.className = 'text-sm text-teal-600 font-bold';
+                    fileInfo.textContent = files[0].name;
+                } else {
+                    fileTitle.textContent = 'Soubory připraveny';
+                    fileTitle.className = 'text-sm text-teal-600 font-bold';
+                    fileInfo.textContent = 'Vybráno celkem: ' + files.length + ' souborů';
+                }
+            });
+        </script>
 
 <?php require_once '../app/views/layout/footer.php'; ?>

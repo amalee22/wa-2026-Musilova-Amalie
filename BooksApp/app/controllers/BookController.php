@@ -2,31 +2,26 @@
 
 class BookController {
 
-        // 0. Výchozí metoda pro zobrazení úvodní stránky včetně seznamu knih
+    // 0. Výchozí metoda pro zobrazení úvodní stránky
     public function index() {
-        // Načtení potřebných tříd
         require_once '../app/models/Database.php';
         require_once '../app/models/Book.php';
 
-        // Vytvoření připojení k databázi
         $database = new Database();
         $db = $database->getConnection();
 
-        // Inicializace modelu a získání dat
         $bookModel = new Book($db);
-        $books = $bookModel->getAll(); // Proměnná $books nyní obsahuje pole všech knih
+        $books = $bookModel->getAll(); 
         
-        // Načte se (vloží) připravený soubor s HTML strukturou
         require_once '../app/views/books/books_list.php';
     }
 
-             public function create() {
-        // Vráceno zpět na knihy
+    // Zobrazení formuláře pro přidání
+    public function create() {
         require_once '../app/views/books/book_create.php';
     }
 
-
-            // Zobrazení detailu jedné knihy
+    // Zobrazení detailu jedné knihy
     public function show($id = null) {
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy.');
@@ -49,48 +44,34 @@ class BookController {
             exit;
         }
 
-        // Načtení šablony pro zobrazení detailu
         require_once '../app/views/books/book_show.php';
     }
 
-
-
-
-
-
-    // 2. Zpracování dat odeslaných z formuláře
+    // 2. Zpracování dat odeslaných z formuláře (PŘIDÁNÍ)
     public function store() {
-        // Kontrola, zda byl formulář odeslán metodou POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
-            // 1. Získání a očištění textových dat (ochrana proti XSS)
             $title = htmlspecialchars($_POST['title'] ?? '');
             $author = htmlspecialchars($_POST['author'] ?? '');
             $isbn = htmlspecialchars($_POST['isbn'] ?? '');
             $category = htmlspecialchars($_POST['category'] ?? '');
             $subcategory = htmlspecialchars($_POST['subcategory'] ?? '');
             
-            // U číselných hodnot se provádí explicitní přetypování
             $year = (int)($_POST['year'] ?? 0);
             $price = (float)($_POST['price'] ?? 0);
             
             $link = htmlspecialchars($_POST['link'] ?? '');
             $description = htmlspecialchars($_POST['description'] ?? '');
 
-            // Prozatímní zástupce pro obrázky (bude řešeno v budoucnu)
-            $uploadedImages = []; 
+            // ZAVOLÁNÍ METODY PRO NAHRÁVÁNÍ OBRÁZKŮ
+            $uploadedImages = $this->processImageUploads(); 
 
-            // 2. Komunikace s databází a modelem
             require_once '../app/models/Database.php';
             require_once '../app/models/Book.php';
 
-            // Vytvoření připojení k DB
             $database = new Database();
             $db = $database->getConnection();
 
-            // Vytvoření objektu knihy a volání metody pro uložení
-            $bookModel = new Book($db);
-            // Zabalíme data do jednoho pole, jak to očekává model
             $bookData = [
                 'title' => $title,
                 'author' => $author,
@@ -103,100 +84,79 @@ class BookController {
                 'link' => $link
             ];
 
-            // Vytvoření objektu knihy a volání metody pro uložení
+            // Tady by správně mělo být DTO z další lekce, ale zatím necháváme takto
             $bookModel = new Book($db);
+            // U create ještě učitel nepředělal metodu na pole images, tak to zatím ignorujeme v SQL
             $isSaved = $bookModel->create($bookData);
 
-            // 3. Vyhodnocení výsledku a přesměrování
             if ($isSaved) {
-                // Vyvolání zelené notifikace pro úspěšnou akci
                 $this->addSuccessMessage('Kniha byla úspěšně uložena do databáze.');
-                
-                // Přesměrování zpět na hlavní stránku s využitím dynamické BASE_URL
                 header('Location: ' . BASE_URL . '/index.php');
                 exit;
             } else {
-                // Vyvolání červené notifikace pro kritické selhání
                 $this->addErrorMessage('Nastala chyba. Nepodařilo se uložit knihu do databáze.');
             }
             
         } else {
-            // Pokud je stránka navštívena napřímo bez odeslání dat, zobrazí se žlutá informativní zpráva
             $this->addNoticeMessage('Pro přidání knihy je nutné odeslat formulář.');
         }
     }
 
-
-// 3. Smazání existující knihy
+    // 3. Smazání existující knihy
     public function delete($id = null) {
-        // Kontrola, zda bylo v URL předáno ID
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy ke smazání.');
             header('Location: ' . BASE_URL . '/index.php');
             exit;
         }
 
-        // Načtení potřebných tříd a spojení s databází
         require_once '../app/models/Database.php';
         require_once '../app/models/Book.php';
 
         $database = new Database();
         $db = $database->getConnection();
 
-        // Inicializace modelu a zavolání metody pro smazání
         $bookModel = new Book($db);
         $isDeleted = $bookModel->delete($id);
 
-        // Vyhodnocení výsledku
         if ($isDeleted) {
             $this->addSuccessMessage('Kniha byla trvale smazána z databáze.');
         } else {
             $this->addErrorMessage('Nastala chyba. Knihu se nepodařilo smazat.');
         }
 
-        // Přesměrování zpět na seznam knih
         header('Location: ' . BASE_URL . '/index.php');
         exit;
     }
 
-
-// 4. Zobrazení formuláře pro úpravu existující knihy
+    // 4. Zobrazení formuláře pro úpravu existující knihy
     public function edit($id = null) {
-        // Kontrola, zda bylo v URL předáno ID
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy k úpravě.');
             header('Location: ' . BASE_URL . '/index.php');
             exit;
         }
 
-        // Načtení potřebných tříd a spojení s databází
         require_once '../app/models/Database.php';
         require_once '../app/models/Book.php';
 
         $database = new Database();
         $db = $database->getConnection();
 
-        // Získání dat o konkrétní knize
         $bookModel = new Book($db);
         $book = $bookModel->getById($id);
 
-        // Pokud kniha neexistuje (někdo si vymyslel ID v URL)
         if (!$book) {
             $this->addErrorMessage('Požadovaná kniha nebyla v databázi nalezena.');
             header('Location: ' . BASE_URL . '/index.php');
             exit;
         }
 
-        // Načtení HTML formuláře pro úpravy
         require_once '../app/views/books/book_edit.php';
     }
 
-
-
-
-    // 5. Zpracování dat odeslaných z editačního formuláře
+    // 5. Zpracování dat odeslaných z editačního formuláře (ÚPRAVA)
     public function update($id = null) {
-        // Kontrola, jestli máme ID knihy, kterou chceme upravit
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy k aktualizaci.');
             header('Location: ' . BASE_URL . '/index.php');
@@ -205,7 +165,6 @@ class BookController {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
-            // 1. Očištění dat z formuláře
             $title = htmlspecialchars($_POST['title'] ?? '');
             $author = htmlspecialchars($_POST['author'] ?? '');
             $isbn = htmlspecialchars($_POST['isbn'] ?? '');
@@ -218,23 +177,31 @@ class BookController {
             $link = htmlspecialchars($_POST['link'] ?? '');
             $description = htmlspecialchars($_POST['description'] ?? '');
 
-            $uploadedImages = []; // Prozatím ignorujeme obrázky
-
-            // 2. Připojení k databázi
             require_once '../app/models/Database.php';
             require_once '../app/models/Book.php';
 
             $database = new Database();
             $db = $database->getConnection();
-
-            // 3. Zavolání modelu pro přepsání dat (UPDATE)
             $bookModel = new Book($db);
+
+            // ŘEŠENÍ UČITELOVA TO-DO ÚKOLU:
+            // 1. Zjistíme si stávající obrázky z databáze
+            $existingBook = $bookModel->getById($id);
+            $oldImages = json_decode($existingBook['images'] ?? '[]', true) ?: [];
+
+            // 2. Pokusíme se nahrát nové obrázky
+            $uploadedImages = $this->processImageUploads();
+
+            // 3. Pokud uživatel nenahrál nic nového, ponecháme staré obrázky
+            if (empty($uploadedImages)) {
+                $uploadedImages = $oldImages;
+            }
+
             $isUpdated = $bookModel->update(
                 $id, $title, $author, $category, $subcategory, 
                 $year, $price, $isbn, $description, $link, $uploadedImages
             );
 
-            // 4. Přesměrování podle úspěchu
             if ($isUpdated) {
                 $this->addSuccessMessage('Kniha byla úspěšně upravena.');
             } else {
@@ -251,22 +218,62 @@ class BookController {
         }
     }
 
+    // --- Pomocná metoda pro zpracování nahrávání obrázků ---
+    protected function processImageUploads() {
+        $uploadedFiles = [];
+        
+        // Cesta ke složce, kam se budou obrázky fyzicky ukládat (relativně od index.php)
+        $uploadDir = __DIR__ . '/../../public/uploads/'; 
+        
+        // Zkontrolujeme, zda vůbec existuje adresář, pokud ne, vytvoříme ho
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
-// --- Pomocné metody pro systém notifikací ---
+        // Zkontrolujeme, zda byl odeslán alespoň jeden soubor
+        if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
+            $fileCount = count($_FILES['images']['name']);
 
+            for ($i = 0; $i < $fileCount; $i++) {
+                // Pokud při nahrávání tohoto konkrétního souboru nedošlo k chybě
+                if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
+                    
+                    $tmpName = $_FILES['images']['tmp_name'][$i];
+                    $originalName = basename($_FILES['images']['name'][$i]);
+                    // Zjištění koncovky (např. jpg, png)
+                    $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+                    // Můžeme zde přidat i kontrolu povolených formátů
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                    if (!in_array($fileExtension, $allowedExtensions)) {
+                        continue; // Přeskočíme nepodporovaný soubor
+                    }
+
+                    // 1. Vygenerování unikátního jména pomocí aktuálního času a náhodného řetězce
+                    $newName = 'book_' . uniqid() . '_' . substr(md5(mt_rand()), 0, 4) . '.' . $fileExtension;
+                    $targetFilePath = $uploadDir . $newName;
+
+                    // 2. Fyzický přesun souboru z dočasné paměti do naší složky uploads
+                    if (move_uploaded_file($tmpName, $targetFilePath)) {
+                        // 3. Uložení POUZE NÁZVU do pole, které pak pošleme databázi
+                        $uploadedFiles[] = $newName; 
+                    }
+                }
+            }
+        }
+        return $uploadedFiles;
+    }
+
+    // --- Pomocné metody pro systém notifikací ---
     protected function addSuccessMessage($message) {
-        // Zelená zpráva o úspěchu
         $_SESSION['messages']['success'][] = $message;
     }
 
     protected function addNoticeMessage($message) {
-        // Žlutá informativní zpráva
         $_SESSION['messages']['notice'][] = $message;
     }
 
     protected function addErrorMessage($message) {
-        // Červená chybová zpráva
         $_SESSION['messages']['error'][] = $message;
     }
 }
-
