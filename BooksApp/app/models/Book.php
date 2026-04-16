@@ -11,27 +11,30 @@ class Book {
     }
 
     public function create($data) {
-        $sql = "INSERT INTO books (title, author, isbn, category, subcategory, year, price, link, description, images) 
-                VALUES (:title, :author, :isbn, :category, :subcategory, :year, :price, :link, :description, :images)";
-        
-        $stmt = $this->db->prepare($sql);
+    // PŘIDÁNO: created_by do INSERT INTO a :created_by do VALUES
+    $sql = "INSERT INTO books (title, author, isbn, category, subcategory, year, price, link, description, images, created_by) 
+            VALUES (:title, :author, :isbn, :category, :subcategory, :year, :price, :link, :description, :images, :created_by)";
+    
+    $stmt = $this->db->prepare($sql);
 
-        $stmt->bindParam(':title', $data['title']);
-        $stmt->bindParam(':author', $data['author']);
-        $stmt->bindParam(':isbn', $data['isbn']);
-        $stmt->bindParam(':category', $data['category']);
-        $stmt->bindParam(':subcategory', $data['subcategory']);
-        $stmt->bindParam(':year', $data['year']);
-        $stmt->bindParam(':price', $data['price']);
-        $stmt->bindParam(':link', $data['link']);
-        $stmt->bindParam(':description', $data['description']);
-        
-        // Přidáno uložení obrázků ve formátu JSON
-        $imagesJson = json_encode($data['images'] ?? []);
-        $stmt->bindParam(':images', $imagesJson);
+    $stmt->bindParam(':title', $data['title']);
+    $stmt->bindParam(':author', $data['author']);
+    $stmt->bindParam(':isbn', $data['isbn']);
+    $stmt->bindParam(':category', $data['category']);
+    $stmt->bindParam(':subcategory', $data['subcategory']);
+    $stmt->bindParam(':year', $data['year']);
+    $stmt->bindParam(':price', $data['price']);
+    $stmt->bindParam(':link', $data['link']);
+    $stmt->bindParam(':description', $data['description']);
+    
+    $imagesJson = json_encode($data['images'] ?? []);
+    $stmt->bindParam(':images', $imagesJson);
 
-        return $stmt->execute();
-    }
+    // PŘIDÁNO: Navázání hodnoty created_by (z pole $data, které jsme si poslali z Controlleru)
+    $stmt->bindParam(':created_by', $data['created_by']);
+
+    return $stmt->execute();
+}
 
 
         // Metoda pro načtení všech knih
@@ -58,8 +61,9 @@ class Book {
     // Aktualizace existující knihy
     public function update(
         $id, $title, $author, $category, $subcategory, 
-        $year, $price, $isbn, $description, $link, $images = []
+        $year, $price, $isbn, $description, $link, $images = [], $updatedBy = null // Přidán parametr
     ) {
+        // Přidáno updated_by = :updated_by do SQL
         $sql = "UPDATE books 
                 SET title = :title, 
                     author = :author, 
@@ -70,7 +74,8 @@ class Book {
                     isbn = :isbn, 
                     description = :description, 
                     link = :link, 
-                    images = :images
+                    images = :images,
+                    updated_by = :updated_by 
                 WHERE id = :id";
                 
         $stmt = $this->db->prepare($sql);
@@ -86,7 +91,8 @@ class Book {
             ':isbn' => $isbn,
             ':description' => $description,
             ':link' => $link,
-            ':images' => json_encode($images)
+            ':images' => json_encode($images),
+            ':updated_by' => $updatedBy // Uložení ID uživatele
         ]);
     }
 

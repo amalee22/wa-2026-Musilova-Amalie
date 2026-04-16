@@ -2,6 +2,15 @@
 
 class BookController {
 
+    // --- POMOCNÁ METODA PRO OVĚŘENÍ PŘIHLÁŠENÍ ---
+    protected function requireAuth() {
+        if (!isset($_SESSION['user_id'])) {
+            $this->addErrorMessage('Pro tuto akci se musíte přihlásit.');
+            header('Location: ' . BASE_URL . '/index.php?url=auth/login');
+            exit;
+        }
+    }
+
     // 0. Výchozí metoda pro zobrazení úvodní stránky
     public function index() {
         require_once '../app/models/Database.php';
@@ -18,6 +27,9 @@ class BookController {
 
     // Zobrazení formuláře pro přidání
     public function create() {
+        // 1. ZABEZPEČENÍ: Musí být přihlášen!
+        $this->requireAuth();
+        
         require_once '../app/views/books/book_create.php';
     }
 
@@ -49,6 +61,9 @@ class BookController {
 
     // 2. Zpracování dat odeslaných z formuláře (PŘIDÁNÍ)
     public function store() {
+        // 1. ZABEZPEČENÍ: Musí být přihlášen!
+        $this->requireAuth();
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $title = htmlspecialchars($_POST['title'] ?? '');
@@ -63,7 +78,6 @@ class BookController {
             $link = htmlspecialchars($_POST['link'] ?? '');
             $description = htmlspecialchars($_POST['description'] ?? '');
 
-            // ZAVOLÁNÍ METODY PRO NAHRÁVÁNÍ OBRÁZKŮ
             $uploadedImages = $this->processImageUploads(); 
 
             require_once '../app/models/Database.php';
@@ -72,7 +86,7 @@ class BookController {
             $database = new Database();
             $db = $database->getConnection();
 
-            // SPRÁVNĚ POSKLÁDANÉ POLE (už obsahuje i images)
+            // PŘIDÁNO: Uložení ID přihlášeného uživatele do pole dat
             $bookData = [
                 'title' => $title,
                 'author' => $author,
@@ -83,7 +97,8 @@ class BookController {
                 'isbn' => $isbn,
                 'description' => $description,
                 'link' => $link,
-                'images' => $uploadedImages 
+                'images' => $uploadedImages,
+                'created_by' => $_SESSION['user_id'] // ID aktuálně přihlášeného uživatele
             ];
 
             $bookModel = new Book($db);
@@ -104,6 +119,9 @@ class BookController {
 
     // 3. Smazání existující knihy
     public function delete($id = null) {
+        // 1. ZABEZPEČENÍ: Musí být přihlášen!
+        $this->requireAuth();
+
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy ke smazání.');
             header('Location: ' . BASE_URL . '/index.php');
@@ -115,8 +133,18 @@ class BookController {
 
         $database = new Database();
         $db = $database->getConnection();
-
         $bookModel = new Book($db);
+
+        // Nejprve musíme knihu najít, abychom zkontrolovali, komu patří
+        $book = $bookModel->getById($id);
+
+        // AUTORIZACE: Zkontrolujeme, zda přihlášený uživatel je autorem záznamu
+        if (!$book || $book['created_by'] != $_SESSION['user_id']) {
+            $this->addErrorMessage('Knihu se nepodařilo smazat. Nemáte k tomu oprávnění (nejste autorem).');
+            header('Location: ' . BASE_URL . '/index.php');
+            exit;
+        }
+
         $isDeleted = $bookModel->delete($id);
 
         if ($isDeleted) {
@@ -131,6 +159,9 @@ class BookController {
 
     // 4. Zobrazení formuláře pro úpravu existující knihy
     public function edit($id = null) {
+        // 1. ZABEZPEČENÍ: Musí být přihlášen!
+        $this->requireAuth();
+
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy k úpravě.');
             header('Location: ' . BASE_URL . '/index.php');
@@ -152,11 +183,21 @@ class BookController {
             exit;
         }
 
+        // AUTORIZACE: Zkontrolujeme, zda přihlášený uživatel je autorem záznamu
+        if ($book['created_by'] != $_SESSION['user_id']) {
+            $this->addErrorMessage('Nemáte oprávnění upravovat cizí záznam.');
+            header('Location: ' . BASE_URL . '/index.php');
+            exit;
+        }
+
         require_once '../app/views/books/book_edit.php';
     }
 
     // 5. Zpracování dat odeslaných z editačního formuláře (ÚPRAVA)
     public function update($id = null) {
+        // 1. ZABEZPEČENÍ: Musí být přihlášen!
+        $this->requireAuth();
+
         if (!$id) {
             $this->addErrorMessage('Nebylo zadáno ID knihy k aktualizaci.');
             header('Location: ' . BASE_URL . '/index.php');
@@ -184,15 +225,23 @@ class BookController {
             $db = $database->getConnection();
             $bookModel = new Book($db);
 
-            // ŘEŠENÍ UČITELOVA TO-DO ÚKOLU:
-            // 1. Zjistíme si stávající obrázky z databáze
+            // Zjistíme si stávající záznam z databáze
             $existingBook = $bookModel->getById($id);
+
+            // AUTORIZACE: Zkontrolujeme, zda přihlášený uživatel je autorem záznamu
+            if (!$existingBook || $existingBook['created_by'] != $_SESSION['user_id']) {
+                $this->addErrorMessage('Nemáte oprávnění upravovat cizí záznam.');
+                header('Location: ' . BASE_URL . '/index.php');
+                exit;
+            }
+
+            // Stávající obrázky
             $oldImages = json_decode($existingBook['images'] ?? '[]', true) ?: [];
 
-            // 2. Pokusíme se nahrát nové obrázky
+            // Pokusíme se nahrát nové obrázky
             $uploadedImages = $this->processImageUploads();
 
-            // 3. Pokud uživatel nenahrál nic nového, ponecháme staré obrázky
+            // Pokud uživatel nenahrál nic nového, ponecháme staré obrázky
             if (empty($uploadedImages)) {
                 $uploadedImages = $oldImages;
             }
@@ -216,46 +265,47 @@ class BookController {
             header('Location: ' . BASE_URL . '/index.php');
             exit;
         }
+
+        // ... předchozí kód (nahrávání obrázků atd.) ...
+
+            $isUpdated = $bookModel->update(
+                $id, $title, $author, $category, $subcategory, 
+                $year, $price, $isbn, $description, $link, $uploadedImages,
+                $_SESSION['user_id'] // PŘIDÁNO: Předáme ID uživatele, který knihu upravil
+            );
+
+            // ... zbytek kódu ...
     }
 
     // --- Pomocná metoda pro zpracování nahrávání obrázků ---
     protected function processImageUploads() {
         $uploadedFiles = [];
         
-        // Cesta ke složce, kam se budou obrázky fyzicky ukládat (relativně od index.php)
         $uploadDir = __DIR__ . '/../../public/uploads/'; 
         
-        // Zkontrolujeme, zda vůbec existuje adresář, pokud ne, vytvoříme ho
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
 
-        // Zkontrolujeme, zda byl odeslán alespoň jeden soubor
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
             $fileCount = count($_FILES['images']['name']);
 
             for ($i = 0; $i < $fileCount; $i++) {
-                // Pokud při nahrávání tohoto konkrétního souboru nedošlo k chybě
                 if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
                     
                     $tmpName = $_FILES['images']['tmp_name'][$i];
                     $originalName = basename($_FILES['images']['name'][$i]);
-                    // Zjištění koncovky (např. jpg, png)
                     $fileExtension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
-                    // Můžeme zde přidat i kontrolu povolených formátů
                     $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
                     if (!in_array($fileExtension, $allowedExtensions)) {
-                        continue; // Přeskočíme nepodporovaný soubor
+                        continue; 
                     }
 
-                    // 1. Vygenerování unikátního jména pomocí aktuálního času a náhodného řetězce
                     $newName = 'book_' . uniqid() . '_' . substr(md5(mt_rand()), 0, 4) . '.' . $fileExtension;
                     $targetFilePath = $uploadDir . $newName;
 
-                    // 2. Fyzický přesun souboru z dočasné paměti do naší složky uploads
                     if (move_uploaded_file($tmpName, $targetFilePath)) {
-                        // 3. Uložení POUZE NÁZVU do pole, které pak pošleme databázi
                         $uploadedFiles[] = $newName; 
                     }
                 }
