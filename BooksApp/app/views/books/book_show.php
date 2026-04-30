@@ -44,20 +44,20 @@
                 <?php 
                     $images = json_decode($book['images'] ?? '[]', true);
                 ?>
-                <?php if (!empty($images)): ?>
-                    <div class="mb-12 pt-8 border-t border-slate-100">
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-5">Galerie</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          
-    <?php foreach ($images as $img): ?>
-        <a href="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" target="_blank" class="block aspect-video rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md hover:border-teal-300 transition-all">
-            <img src="<?= BASE_URL ?>/public/uploads/<?= htmlspecialchars($img) ?>" alt="Náhled" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-        </a>
-    <?php endforeach; ?>
+               <?php if (!empty($images)): ?>
+    <div class="mb-12 pt-8 border-t border-slate-100">
+        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-5">Galerie</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            
+            <?php foreach ($images as $img): ?>
+                <a href="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" target="_blank" class="flex items-center justify-center p-3 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-teal-300 transition-all bg-slate-50/80 group">
+                    <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" alt="Náhled" class="max-w-full h-auto max-h-72 object-contain rounded-md group-hover:scale-105 transition-transform duration-500">
+                </a>
+            <?php endforeach; ?>
 
-                        </div>
-                    </div>
-                <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-slate-100">
                     <?php if (!empty($book['link'])): ?>
