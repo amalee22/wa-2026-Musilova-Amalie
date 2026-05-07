@@ -1,6 +1,6 @@
 <?php require_once '../app/views/layout/header.php'; ?>
 
-<div class="max-w-6xl mx-auto space-y-10">
+<div class="max-w-6xl mx-auto space-y-10 mb-20">
     
     <div class="bg-white p-8 sm:p-12 rounded-[2rem] shadow-xl shadow-bake-brown/5 border border-bake-cream">
         <h2 class="text-3xl font-bold text-bake-brown mb-8"><i class="fas fa-user-circle mr-3 text-bake-blue"></i>Můj profil</h2>
@@ -68,6 +68,16 @@
         <?php else: ?>
             <p class="text-slate-500 italic px-4 text-center py-10 bg-white rounded-2xl border border-dashed">Zatím nemáte žádné oblíbené recepty.</p>
         <?php endif; ?>
+    </div>
+
+    <div class="mt-16 pt-10 border-t border-red-200">
+        <h3 class="text-xl font-bold text-red-600 mb-2 px-4"><i class="fas fa-exclamation-triangle mr-2"></i> Nebezpečná zóna</h3>
+        <p class="text-slate-500 mb-4 px-4 text-sm">Smazáním účtu přijdete o všechny oblíbené recepty a komentáře. Vaše vydané recepty budou také trvale odstraněny.</p>
+        <div class="px-4">
+            <a href="<?= BASE_URL ?>/index.php?url=auth/deleteAccount" onclick="return confirm('Opravdu chcete TRVALE smazat svůj účet? Tuto akci nelze vrátit zpět!')" class="inline-block border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-bold px-6 py-2.5 rounded-xl transition">
+                Trvale smazat můj účet
+            </a>
+        </div>
     </div>
 
 </div>
