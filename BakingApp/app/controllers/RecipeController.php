@@ -11,7 +11,6 @@ class RecipeController {
     }
 
     public function index() {
-        // Zjištění, zda uživatel něco hledá (parametr q ze search baru)
         $query = $_GET['q'] ?? '';
         
         require_once '../app/models/Database.php';
@@ -20,7 +19,6 @@ class RecipeController {
         $db = (new Database())->getConnection();
         $recipeModel = new Recipe($db);
         
-        // Pokud hledá, spustíme search, jinak klasické getAll
         $recipes = $query ? $recipeModel->search($query) : $recipeModel->getAll(); 
         
         require_once '../app/views/recipes/recipes_list.php';
@@ -59,7 +57,6 @@ class RecipeController {
         $commentModel = new Comment($db);
         $comments = $commentModel->getByRecipeId($id);
 
-        // Zjištění stavu lajků a oblíbených pro daného uživatele
         $likeModel = new Like($db);
         $favModel = new Favorite($db);
         
@@ -118,7 +115,6 @@ class RecipeController {
         $recipeModel = new Recipe($db);
         $recipe = $recipeModel->getById($id);
 
-        // Kontrola, zda recept upravuje opravdu jeho autor
         if (!$recipe || $recipe['created_by'] != $_SESSION['user_id']) {
             $this->addErrorMessage('Nemáte oprávnění upravovat cizí recept.');
             header('Location: ' . BASE_URL . '/index.php'); exit;
@@ -152,6 +148,18 @@ class RecipeController {
             $uploadedImages = $this->processImageUploads();
             if (empty($uploadedImages)) {
                 $uploadedImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
+            } else {
+                // OPRAVA: Pokud uživatel nahrál nové obrázky, smazat ty staré z disku
+                $oldImages = json_decode($existingRecipe['images'] ?? '[]', true);
+                if (!empty($oldImages)) {
+                    $uploadDir = __DIR__ . '/../../public/uploads/';
+                    foreach ($oldImages as $img) {
+                        $filePath = $uploadDir . $img;
+                        if (file_exists($filePath) && is_file($filePath)) {
+                            unlink($filePath);
+                        }
+                    }
+                }
             }
 
             $isUpdated = $recipeModel->update($id, $title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages);
@@ -179,6 +187,18 @@ class RecipeController {
         if (!$recipe || $recipe['created_by'] != $_SESSION['user_id']) {
             $this->addErrorMessage('Nemáte oprávnění k tomuto úkonu.');
             header('Location: ' . BASE_URL . '/index.php'); exit;
+        }
+        
+        // OPRAVA: Smazání starých fotografií z disku při odstranění receptu
+        $images = json_decode($recipe['images'] ?? '[]', true);
+        if (!empty($images)) {
+            $uploadDir = __DIR__ . '/../../public/uploads/';
+            foreach ($images as $img) {
+                $filePath = $uploadDir . $img;
+                if (file_exists($filePath) && is_file($filePath)) {
+                    unlink($filePath);
+                }
+            }
         }
         
         if ($recipeModel->delete($id)) { 
@@ -212,9 +232,6 @@ class RecipeController {
         }
     }
 
-    // =====================================
-    // AJAX ENDPOINTY PRO LAJKY A OBLÍBENÉ
-    // =====================================
     public function toggleLike() {
         header('Content-Type: application/json');
         if (!isset($_SESSION['user_id'])) {
