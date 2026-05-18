@@ -29,11 +29,14 @@
                             <?php endif; ?>
                         </div>
 
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold uppercase tracking-wider">
+                        <div class="flex flex-wrap gap-2 items-center mb-3">
+                            <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold uppercase tracking-wider shrink-0">
                                 <?= htmlspecialchars($book['year']) ?>
                             </span>
-                            <span class="text-teal-600 font-bold"><?= htmlspecialchars($book['price']) ?> Kč</span>
+                            <span class="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-semibold uppercase tracking-wider truncate max-w-[120px]" title="<?= htmlspecialchars($book['category_name'] ?? 'Nezařazeno') ?>">
+                                <?= htmlspecialchars($book['category_name'] ?? 'Nezařazeno') ?>
+                            </span>
+                            <span class="text-teal-600 font-bold ml-auto shrink-0"><?= htmlspecialchars($book['price']) ?> Kč</span>
                         </div>
 
                         <h3 class="text-xl font-bold text-slate-800 mb-1 leading-tight group-hover:text-teal-600 transition-colors">
@@ -45,10 +48,28 @@
 
                         <div class="flex gap-2 pt-4 border-t border-slate-50">
                             <a href="<?= BASE_URL ?>/index.php?url=book/show/<?= $book['id'] ?>" class="flex-1 bg-slate-50 hover:bg-teal-50 text-slate-600 hover:text-teal-700 text-center py-2 rounded-xl font-medium text-sm transition-colors">Detail</a>
-                            <a href="<?= BASE_URL ?>/index.php?url=book/edit/<?= $book['id'] ?>" class="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-600 text-center py-2 rounded-xl font-medium text-sm transition-colors">Upravit</a>
-                            <a href="<?= BASE_URL ?>/index.php?url=book/delete/<?= $book['id'] ?>" onclick="return confirm('Opravdu smazat?')" class="w-10 flex items-center justify-center bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </a>
+                            
+                            <?php 
+                            // Kontrola práv na frontendové zobrazení tlačítek (Zachováno z minulého úkolu)
+                            $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+                            $isAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $book['created_by'];
+                            
+                            if ($isAuthor || $isAdmin): 
+                                // Výchozí barevné styly tlačítek
+                                $editBtnStyle = "bg-slate-50 hover:bg-slate-200 text-slate-600 border border-transparent";
+                                $deleteBtnStyle = "bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white border border-transparent";
+                                
+                                // Vizuální odlišení cizích knih pro administrátora
+                                if ($isAdmin && !$isAuthor) {
+                                    $editBtnStyle = "bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60";
+                                    $deleteBtnStyle = "bg-purple-50 hover:bg-purple-600 text-purple-600 hover:text-white border border-purple-200/60";
+                                }
+                            ?>
+                                <a href="<?= BASE_URL ?>/index.php?url=book/edit/<?= $book['id'] ?>" class="flex-1 text-center py-2 rounded-xl font-medium text-sm transition-colors <?= $editBtnStyle ?>">Upravit</a>
+                                <a href="<?= BASE_URL ?>/index.php?url=book/delete/<?= $book['id'] ?>" onclick="return confirm('Opravdu chcete tuto knihu smazat?')" class="w-10 flex items-center justify-center rounded-xl transition-colors <?= $deleteBtnStyle ?>">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
