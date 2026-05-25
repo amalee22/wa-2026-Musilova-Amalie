@@ -11,9 +11,17 @@ class Recipe {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':title' => $title, ':description' => $description, ':ingredients' => $ingredients, ':instructions' => $instructions, ':category' => $category, ':prep_time' => $prep_time, ':images' => json_encode($images), ':created_by' => $userId]);
     }
-public function getAll(string $sort = 'latest'): array {
-        // Dynamické sestavení řazení
-        $orderClause = "ORDER BY r.created_at DESC"; // Výchozí: Nejnovější
+
+    // NOVÉ: Zjistí celkový počet receptů pro výpočet stránek
+    public function getTotalCount(): int {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM recipes");
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
+
+    // UPRAVENO: Přidán LIMIT a OFFSET pro stránkování
+    public function getAll(string $sort = 'latest', int $limit = 8, int $offset = 0): array {
+        $orderClause = "ORDER BY r.created_at DESC"; 
         if ($sort === 'oldest') { $orderClause = "ORDER BY r.created_at ASC"; }
         if ($sort === 'time') { $orderClause = "ORDER BY r.prep_time ASC"; }
 
@@ -21,7 +29,8 @@ public function getAll(string $sort = 'latest'): array {
                 FROM recipes r 
                 LEFT JOIN categories c ON r.category_id = c.id 
                 LEFT JOIN users u ON r.created_by = u.id 
-                $orderClause";
+                $orderClause 
+                LIMIT $limit OFFSET $offset";
         $stmt = $this->db->prepare($sql); $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -41,12 +50,23 @@ public function getAll(string $sort = 'latest'): array {
         $stmt->execute([':q' => "%$query%"]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     
     public function getById(int $id): ?array {
         $sql = "SELECT r.*, c.name as category_name, u.username as author_name FROM recipes r LEFT JOIN categories c ON r.category_id = c.id LEFT JOIN users u ON r.created_by = u.id WHERE r.id = :id";
         $stmt = $this->db->prepare($sql); $stmt->execute([':id' => $id]);
         $recipe = $stmt->fetch(PDO::FETCH_ASSOC); return $recipe ?: null;
+    }
+
+    // NOVÉ: Vyhledá 3 podobné recepty ze stejné kategorie (kromě toho aktuálního)
+    public function getSimilar(int $categoryId, int $currentRecipeId, int $limit = 3): array {
+        $sql = "SELECT r.*, u.username, u.nickname 
+                FROM recipes r 
+                LEFT JOIN users u ON r.created_by = u.id 
+                WHERE r.category_id = :cat_id AND r.id != :rec_id 
+                ORDER BY RAND() LIMIT " . (int)$limit;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':cat_id' => $categoryId, ':rec_id' => $currentRecipeId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getByUserId(int $userId): array {

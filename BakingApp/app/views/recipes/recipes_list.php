@@ -80,6 +80,27 @@
                 </div>
             <?php endforeach; ?>
         </div>
+
+        <?php if (!isset($_GET['q']) && isset($totalPages) && $totalPages > 1): ?>
+            <div class="flex justify-center items-center gap-2 mt-12 mb-8">
+                <?php if ($page > 1): ?>
+                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page - 1 ?>" class="px-4 py-2 bg-white border border-bake-cream text-bake-brown font-bold rounded-xl hover:bg-bake-cream transition">Předchozí</a>
+                <?php endif; ?>
+                
+                <div class="flex gap-1">
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $i ?>" class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition <?= ($i == $page) ? 'bg-bake-brown text-bake-cream shadow-md' : 'bg-white border border-bake-cream text-bake-brown hover:bg-bake-cream' ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+
+                <?php if ($page < $totalPages): ?>
+                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page + 1 ?>" class="px-4 py-2 bg-white border border-bake-cream text-bake-brown font-bold rounded-xl hover:bg-bake-cream transition">Další</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
     <?php else: ?>
         <div class="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-dashed border-slate-300">
             <p class="text-slate-400 text-lg mb-4">

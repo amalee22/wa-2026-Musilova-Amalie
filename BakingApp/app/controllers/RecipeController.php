@@ -10,15 +10,27 @@ class RecipeController {
         }
     }
 
-   public function index() {
+    public function index() {
         $query = $_GET['q'] ?? '';
-        $sort = $_GET['sort'] ?? 'latest'; // ZMĚNA: Načtení parametru pro řazení
+        $sort = $_GET['sort'] ?? 'latest'; 
+        
+        // Výpočet stránkování
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $limit = 8; // Kolik receptů na jednu stranu chceme
+        $offset = ($page - 1) * $limit;
         
         require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php';
         $db = (new Database())->getConnection(); $recipeModel = new Recipe($db);
         
-        // ZMĚNA: Předání parametru $sort do modelu
-        $recipes = $query ? $recipeModel->search($query, $sort) : $recipeModel->getAll($sort); 
+        if ($query) {
+            $recipes = $recipeModel->search($query, $sort); 
+            $totalPages = 1; // Při vyhledávání stránkování schováme
+        } else {
+            $totalRecipes = $recipeModel->getTotalCount();
+            $totalPages = ceil($totalRecipes / $limit);
+            $recipes = $recipeModel->getAll($sort, $limit, $offset);
+        }
         
         require_once '../app/views/recipes/recipes_list.php';
     }
@@ -36,9 +48,13 @@ class RecipeController {
         require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php'; require_once '../app/models/Comment.php'; require_once '../app/models/Like.php'; require_once '../app/models/Favorite.php';
 
         $db = (new Database())->getConnection();
-        $recipe = (new Recipe($db))->getById($id);
+        $recipeModel = new Recipe($db);
+        $recipe = $recipeModel->getById($id);
         
         if (!$recipe) { $this->addErrorMessage('Hledaný recept v databázi neexistuje.'); header('Location: ' . BASE_URL . '/index.php'); exit; }
+
+        // Načtení podobných receptů
+        $similarRecipes = $recipeModel->getSimilar((int)$recipe['category_id'], $id);
 
         $commentModel = new Comment($db);
         $comments = $commentModel->getByRecipeId($id);
@@ -77,17 +93,14 @@ class RecipeController {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Kontrola CSRF tokenu
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                $this->addErrorMessage('Neplatný požadavek (CSRF ověření selhalo). Zkuste formulář odeslat znovu.');
-                header('Location: ' . BASE_URL . '/index.php?url=recipe/create');
-                exit;
+                $this->addErrorMessage('Neplatný požadavek (CSRF selhalo). Zkuste to znovu.');
+                header('Location: ' . BASE_URL . '/index.php?url=recipe/create'); exit;
             }
 
             $this->requireAuth();
             $userId = $_SESSION['user_id'];
 
-            // Použití trim místo htmlspecialchars
             $title = trim($_POST['title'] ?? '');
             $description = trim($_POST['description'] ?? '');
             $ingredients = trim($_POST['ingredients'] ?? '');
@@ -112,14 +125,11 @@ class RecipeController {
     public function update($id = null) {
         $this->requireAuth();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Kontrola CSRF tokenu
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                $this->addErrorMessage('Neplatný požadavek (CSRF ověření selhalo). Zkuste formulář odeslat znovu.');
-                header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . $id);
-                exit;
+                $this->addErrorMessage('Neplatný požadavek (CSRF selhalo). Zkuste to znovu.');
+                header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . $id); exit;
             }
 
-            // Použití trim místo htmlspecialchars
             $title = trim($_POST['title'] ?? '');
             $description = trim($_POST['description'] ?? '');
             $ingredients = trim($_POST['ingredients'] ?? '');
@@ -189,8 +199,6 @@ class RecipeController {
         else { $this->addErrorMessage('Nastala chyba.'); }
         header('Location: ' . BASE_URL . '/index.php'); exit;
     }
-
-    // --- CRUD PRO KOMENTÁŘE ---
 
     public function addComment() {
         $this->requireAuth();
@@ -266,8 +274,6 @@ class RecipeController {
         header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . $recipeId); exit;
     }
 
-    // --- AJAX METODY ---
-
     public function toggleLike() {
         header('Content-Type: application/json');
         if (!isset($_SESSION['user_id'])) { echo json_encode(['error' => 'Not logged in']); exit; }
@@ -295,21 +301,17 @@ class RecipeController {
         
         if (isset($_FILES['images']) && !empty($_FILES['images']['name'][0])) {
             $fileCount = count($_FILES['images']['name']);
-            // Seznam povolených skutečných MIME typů
             $allowedMimes = ['image/jpeg', 'image/png', 'image/webp']; 
 
             for ($i = 0; $i < $fileCount; $i++) {
                 if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
                     $tmpName = $_FILES['images']['tmp_name'][$i];
                     
-                    // Kontrola obsahu souboru, nikoliv jen přípony!
                     $finfo = finfo_open(FILEINFO_MIME_TYPE);
                     $mimeType = finfo_file($finfo, $tmpName);
                     finfo_close($finfo);
 
-                    if (!in_array($mimeType, $allowedMimes)) {
-                        continue; // Pokud to opravdu není obrázek, ignorujeme ho
-                    }
+                    if (!in_array($mimeType, $allowedMimes)) { continue; }
 
                     $fileExtension = strtolower(pathinfo($_FILES['images']['name'][$i], PATHINFO_EXTENSION));
                     if (!in_array($fileExtension, ['jpg', 'jpeg', 'png', 'webp'])) continue;

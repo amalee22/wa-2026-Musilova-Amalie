@@ -1,7 +1,14 @@
 <?php require_once '../app/views/layout/header.php'; ?>
 <?php 
-$ingredientsList = array_filter(array_map('trim', explode("\n", $recipe['ingredients'])));
-$instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instructions'])));
+/** * @var array $recipe 
+ * @var int $likesCount 
+ * @var bool $isLiked 
+ * @var bool $isFavorited 
+ * @var array $similarRecipes 
+ * @var array $comments 
+ */
+$ingredientsList = array_filter(array_map('trim', explode("\n", $recipe['ingredients'] ?? '')));
+$instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instructions'] ?? '')));
 ?>
 
 <div class="max-w-5xl mx-auto bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden transition-all duration-300 mb-20">
@@ -145,6 +152,35 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                 </a>
             </div>
         <?php endif; ?>
+
+
+        <?php if (!empty($similarRecipes)): ?>
+        <div class="mt-16 pt-16 border-t border-slate-100 no-print">
+            <h3 class="text-2xl font-black text-bake-brown mb-8"><i class="fas fa-layer-group text-bake-blue mr-3"></i>Podobné recepty v této kategorii</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <?php foreach ($similarRecipes as $similar): ?>
+                    <?php 
+                        $simImages = json_decode($similar['images'] ?? '[]', true);
+                        $simCover = !empty($simImages) ? $simImages[0] : null;
+                    ?>
+                    <a href="<?= BASE_URL ?>/index.php?url=recipe/show/<?= $similar['id'] ?>" class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-lg transition-all group flex items-center gap-4">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-bake-cream shrink-0 border border-bake-cream">
+                            <?php if ($simCover): ?>
+                                <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($simCover) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center text-bake-blue/50"><i class="fas fa-cookie-bite text-2xl"></i></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="text-xs font-bold text-slate-400 block mb-1"><i class="far fa-clock"></i> <?= htmlspecialchars($similar['prep_time']) ?> min</span>
+                            <h4 class="font-bold text-bake-brown truncate group-hover:text-bake-blue transition-colors"><?= htmlspecialchars($similar['title']) ?></h4>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
 
         <div class="mt-16 pt-16 border-t border-slate-100 no-print">
             <h3 class="text-3xl font-black text-bake-brown mb-8"><i class="far fa-comments text-bake-blue mr-3"></i>Hodnocení pekařů</h3>
