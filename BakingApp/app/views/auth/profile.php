@@ -70,16 +70,6 @@
         <?php endif; ?>
     </div>
 
-    <div class="mt-16 pt-10 border-t border-red-200">
-        <h3 class="text-xl font-bold text-red-600 mb-2 px-4"><i class="fas fa-exclamation-triangle mr-2"></i> Nebezpečná zóna</h3>
-        <p class="text-slate-500 mb-4 px-4 text-sm">Smazáním účtu přijdete o všechny oblíbené recepty a komentáře. Vaše vydané recepty budou také trvale odstraněny.</p>
-        <div class="px-4">
-            <a href="<?= BASE_URL ?>/index.php?url=auth/deleteAccount" onclick="return confirm('Opravdu chcete TRVALE smazat svůj účet? Tuto akci nelze vrátit zpět!')" class="inline-block border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-bold px-6 py-2.5 rounded-xl transition">
-                Trvale smazat můj účet
-            </a>
-        </div>
-    </div>
-
 </div>
 
 <?php require_once '../app/views/layout/footer.php'; ?>

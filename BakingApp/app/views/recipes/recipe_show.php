@@ -1,13 +1,5 @@
 <?php require_once '../app/views/layout/header.php'; ?>
 <?php 
-/** * @var array $recipe 
- * @var array $comments 
- * @var bool $isLiked
- * @var bool $isFavorited
- * @var int $likesCount
- */ 
-
-// Rozdělení surovin a postupu na jednotlivé řádky
 $ingredientsList = array_filter(array_map('trim', explode("\n", $recipe['ingredients'])));
 $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instructions'])));
 ?>
@@ -103,7 +95,6 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                     <?php 
                         $stepNum = 1; 
                         foreach($instructionsList as $index => $step): 
-                            // Odstraní případná ručně psaná čísla na začátku (např. "1. " nebo "1) ")
                             $cleanStep = preg_replace('/^\d+[\.\)]\s*/', '', $step);
                     ?>
                         <div class="flex gap-5 items-start group cursor-pointer p-4 -ml-4 rounded-2xl hover:bg-slate-50 transition-colors" onclick="toggleStep('step-<?= $index ?>')">
@@ -140,10 +131,17 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
         </div>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['created_by']): ?>
-            <div class="flex justify-end pt-10 mt-16 border-t border-slate-100 no-print">
+        <?php 
+            $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+            $isAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['created_by'];
+        ?>
+        <?php if ($isAuthor || $isAdmin): ?>
+            <div class="flex justify-end gap-4 pt-10 mt-16 border-t border-slate-100 no-print">
                 <a href="<?= BASE_URL ?>/index.php?url=recipe/edit/<?= $recipe['id'] ?>" class="bg-bake-brown hover:bg-opacity-90 text-bake-cream px-8 py-3.5 rounded-2xl shadow-lg font-bold flex items-center gap-2">
-                    <i class="fas fa-pen"></i> Upravit můj recept
+                    <i class="fas fa-pen"></i> <?= $isAuthor ? 'Upravit můj recept' : 'Upravit recept (Admin)' ?>
+                </a>
+                <a href="<?= BASE_URL ?>/index.php?url=recipe/delete/<?= $recipe['id'] ?>" onclick="return confirm('Opravdu chcete tento recept trvale smazat?')" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3.5 rounded-2xl shadow-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-trash"></i> Smazat
                 </a>
             </div>
         <?php endif; ?>
@@ -170,16 +168,30 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
             <div class="space-y-6">
                 <?php if (!empty($comments)): ?>
                     <?php foreach ($comments as $comment): ?>
-                        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex gap-5">
+                        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex gap-5 group transition-all">
                             <div class="w-12 h-12 rounded-full bg-bake-blue/20 flex items-center justify-center text-bake-brown font-black text-xl shrink-0">
                                 <?= strtoupper(substr(htmlspecialchars($comment['nickname'] ?: $comment['username']), 0, 1)) ?>
                             </div>
-                            <div>
-                                <div class="flex items-center gap-3 mb-1">
-                                    <span class="font-bold text-bake-brown text-lg"><?= htmlspecialchars($comment['nickname'] ?: $comment['username']) ?></span>
-                                    <span class="text-xs text-slate-400 font-medium"><?= date('d. m. Y', strtotime($comment['created_at'])) ?></span>
+                            <div class="w-full">
+                                <div class="flex items-center justify-between mb-1">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-bold text-bake-brown text-lg"><?= htmlspecialchars($comment['nickname'] ?: $comment['username']) ?></span>
+                                        <span class="text-xs text-slate-400 font-medium"><?= date('d. m. Y H:i', strtotime($comment['created_at'])) ?></span>
+                                    </div>
+                                    
+                                    <?php 
+                                        $isCommentAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $comment['user_id'];
+                                    ?>
+                                    <?php if ($isCommentAuthor || $isAdmin): ?>
+                                        <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <?php if ($isCommentAuthor): ?>
+                                                <a href="<?= BASE_URL ?>/index.php?url=recipe/editComment/<?= $comment['id'] ?>" class="text-bake-blue hover:text-bake-brown transition-colors text-sm font-bold"><i class="fas fa-pen"></i></a>
+                                            <?php endif; ?>
+                                            <a href="<?= BASE_URL ?>/index.php?url=recipe/deleteComment/<?= $comment['id'] ?>" onclick="return confirm('Opravdu smazat komentář?')" class="text-red-400 hover:text-red-600 transition-colors text-sm font-bold"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <p class="text-slate-700 leading-relaxed"><?= nl2br(htmlspecialchars($comment['text'])) ?></p>
+                                <p class="text-slate-700 leading-relaxed pr-10"><?= nl2br(htmlspecialchars($comment['text'])) ?></p>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -203,114 +215,61 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
 </style>
 
 <script>
-    // JS pro Suroviny
     function toggleIng(id) {
-        const textEl = document.getElementById(id + '-text');
-        const checkEl = document.getElementById(id + '-check');
-        const iconEl = document.getElementById(id + '-icon');
-        
+        const textEl = document.getElementById(id + '-text'); const checkEl = document.getElementById(id + '-check'); const iconEl = document.getElementById(id + '-icon');
         checkEl.checked = !checkEl.checked;
-        
-        if(checkEl.checked) {
-            textEl.classList.add('line-through', 'text-slate-400');
-            textEl.classList.remove('text-slate-800');
-            iconEl.classList.remove('opacity-0', 'scale-50');
-        } else {
-            textEl.classList.remove('line-through', 'text-slate-400');
-            textEl.classList.add('text-slate-800');
-            iconEl.classList.add('opacity-0', 'scale-50');
-        }
+        if(checkEl.checked) { textEl.classList.add('line-through', 'text-slate-400'); textEl.classList.remove('text-slate-800'); iconEl.classList.remove('opacity-0', 'scale-50'); } 
+        else { textEl.classList.remove('line-through', 'text-slate-400'); textEl.classList.add('text-slate-800'); iconEl.classList.add('opacity-0', 'scale-50'); }
     }
 
-    // JS pro Postup
     function toggleStep(id) {
-        const textEl = document.getElementById(id + '-text');
-        const checkEl = document.getElementById(id + '-check');
-        const iconEl = document.getElementById(id + '-icon');
-        
+        const textEl = document.getElementById(id + '-text'); const checkEl = document.getElementById(id + '-check'); const iconEl = document.getElementById(id + '-icon');
         checkEl.checked = !checkEl.checked;
-        
-        if(checkEl.checked) {
-            textEl.classList.add('line-through', 'text-slate-400', 'opacity-50');
-            textEl.classList.remove('text-slate-700');
-            iconEl.classList.remove('opacity-0', 'scale-50');
-        } else {
-            textEl.classList.remove('line-through', 'text-slate-400', 'opacity-50');
-            textEl.classList.add('text-slate-700');
-            iconEl.classList.add('opacity-0', 'scale-50');
-        }
+        if(checkEl.checked) { textEl.classList.add('line-through', 'text-slate-400', 'opacity-50'); textEl.classList.remove('text-slate-700'); iconEl.classList.remove('opacity-0', 'scale-50'); } 
+        else { textEl.classList.remove('line-through', 'text-slate-400', 'opacity-50'); textEl.classList.add('text-slate-700'); iconEl.classList.add('opacity-0', 'scale-50'); }
     }
 
-    // JS pro Kopírování chybějících surovin (Nákupní seznam)
     function copyUncheckedIngredients() {
-        let textToCopy = "Nákupní seznam:\n";
-        let hasItems = false;
-
+        let textToCopy = "Nákupní seznam:\n"; let hasItems = false;
         <?php foreach($ingredientsList as $index => $item): ?>
-            // Podívá se, jestli je box zaškrtnutý
-            if (!document.getElementById('ing-<?= $index ?>-check').checked) {
-                textToCopy += "- <?= addslashes($item) ?>\n";
-                hasItems = true;
-            }
+            if (!document.getElementById('ing-<?= $index ?>-check').checked) { textToCopy += "- <?= addslashes($item) ?>\n"; hasItems = true; }
         <?php endforeach; ?>
-
         if (hasItems) {
             navigator.clipboard.writeText(textToCopy).then(() => {
-                const btnText = document.getElementById('copyText');
-                const originalText = btnText.innerText;
+                const btnText = document.getElementById('copyText'); const originalText = btnText.innerText;
                 btnText.innerText = "Zkopírováno do schránky! ✔️";
                 setTimeout(() => { btnText.innerText = originalText; }, 3000);
             });
-        } else {
-            alert("Máte zaškrtnuté úplně všechny suroviny! Nic nechybí.");
-        }
+        } else { alert("Máte zaškrtnuté úplně všechny suroviny! Nic nechybí."); }
     }
 
-    // AJAX Lajky a Oblíbené
     function toggleLike(recipeId) {
-        fetch('<?= BASE_URL ?>/index.php?url=recipe/toggleLike', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe_id: recipeId })
+        fetch('<?= BASE_URL ?>/index.php?url=recipe/toggleLike', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe_id: recipeId })
         }).then(res => res.json()).then(data => {
             if (data.error) { alert('Pro lajkování se musíte přihlásit!'); return; }
-            const icon = document.getElementById('heartIcon');
-            const count = document.getElementById('likesCount');
-            if (data.status === 'liked') {
-                icon.classList.remove('far'); icon.classList.add('fas', 'text-rose-500');
-            } else {
-                icon.classList.remove('fas', 'text-rose-500'); icon.classList.add('far');
-            }
+            const icon = document.getElementById('heartIcon'); const count = document.getElementById('likesCount');
+            if (data.status === 'liked') { icon.classList.remove('far'); icon.classList.add('fas', 'text-rose-500'); } 
+            else { icon.classList.remove('fas', 'text-rose-500'); icon.classList.add('far'); }
             count.innerText = data.count;
         });
     }
 
     function toggleFavorite(recipeId) {
-        fetch('<?= BASE_URL ?>/index.php?url=recipe/toggleFavorite', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe_id: recipeId })
+        fetch('<?= BASE_URL ?>/index.php?url=recipe/toggleFavorite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipe_id: recipeId })
         }).then(res => res.json()).then(data => {
             if (data.error) { alert('Pro uložení receptu se musíte přihlásit!'); return; }
             const icon = document.getElementById('bookmarkIcon');
-            if (data.status === 'favorited') {
-                icon.classList.remove('far'); icon.classList.add('fas', 'text-bake-blue');
-            } else {
-                icon.classList.remove('fas', 'text-bake-blue'); icon.classList.add('far');
-            }
+            if (data.status === 'favorited') { icon.classList.remove('far'); icon.classList.add('fas', 'text-bake-blue'); } 
+            else { icon.classList.remove('fas', 'text-bake-blue'); icon.classList.add('far'); }
         });
     }
 
-    // Kalkulačka
     function calculateCups() {
-        const val = document.getElementById('calcValue').value;
-        const type = document.getElementById('calcType').value;
-        const result = document.getElementById('calcResult');
-        
+        const val = document.getElementById('calcValue').value; const type = document.getElementById('calcType').value; const result = document.getElementById('calcResult');
         if(!val || val <= 0) return;
-        
         result.classList.remove('hidden');
-        if(type === 'g_to_cups') {
-            result.innerText = "= " + (val / 120).toFixed(1) + " hrnků";
-        } else {
-            result.innerText = "= " + (val * 120).toFixed(0) + " g";
-        }
+        if(type === 'g_to_cups') { result.innerText = "= " + (val / 120).toFixed(1) + " hrnků"; } 
+        else { result.innerText = "= " + (val * 120).toFixed(0) + " g"; }
     }
 </script>
 

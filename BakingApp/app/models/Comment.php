@@ -7,7 +7,6 @@ class Comment {
         $this->db = $db;
     }
 
-    // 1. Získání všech komentářů k jednomu receptu (včetně jména autora)
     public function getByRecipeId(int $recipeId): array {
         $sql = "SELECT c.*, u.username, u.nickname 
                 FROM comments c
@@ -19,7 +18,6 @@ class Comment {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 2. Přidání nového komentáře
     public function create(int $recipeId, int $userId, string $text): bool {
         $sql = "INSERT INTO comments (recipe_id, user_id, text) VALUES (:recipe_id, :user_id, :text)";
         $stmt = $this->db->prepare($sql);
@@ -30,14 +28,19 @@ class Comment {
         ]);
     }
 
-    // 3. Smazání komentáře (bude moci udělat jen autor nebo admin)
+    // NOVÉ: Úprava stávajícího komentáře
+    public function update(int $id, string $text): bool {
+        $sql = "UPDATE comments SET text = :text WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':text' => $text, ':id' => $id]);
+    }
+
     public function delete(int $id): bool {
         $sql = "DELETE FROM comments WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
     
-    // Získání jednoho komentáře (pro kontrolu práv před smazáním)
     public function getById(int $id) {
         $sql = "SELECT * FROM comments WHERE id = :id";
         $stmt = $this->db->prepare($sql);

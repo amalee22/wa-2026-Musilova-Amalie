@@ -11,22 +11,38 @@ class Recipe {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':title' => $title, ':description' => $description, ':ingredients' => $ingredients, ':instructions' => $instructions, ':category' => $category, ':prep_time' => $prep_time, ':images' => json_encode($images), ':created_by' => $userId]);
     }
+public function getAll(string $sort = 'latest'): array {
+        // Dynamické sestavení řazení
+        $orderClause = "ORDER BY r.created_at DESC"; // Výchozí: Nejnovější
+        if ($sort === 'oldest') { $orderClause = "ORDER BY r.created_at ASC"; }
+        if ($sort === 'time') { $orderClause = "ORDER BY r.prep_time ASC"; }
 
-    public function getAll(): array {
-        $sql = "SELECT r.*, c.name as category_name, u.username, u.nickname FROM recipes r LEFT JOIN categories c ON r.category_id = c.id LEFT JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC";
+        $sql = "SELECT r.*, c.name as category_name, u.username, u.nickname 
+                FROM recipes r 
+                LEFT JOIN categories c ON r.category_id = c.id 
+                LEFT JOIN users u ON r.created_by = u.id 
+                $orderClause";
         $stmt = $this->db->prepare($sql); $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // NOVÁ FUNKCE: Vyhledávání v receptech
-    public function search(string $query): array {
-        $sql = "SELECT r.*, c.name as category_name, u.username, u.nickname FROM recipes r LEFT JOIN categories c ON r.category_id = c.id LEFT JOIN users u ON r.created_by = u.id 
-                WHERE r.title LIKE :q OR r.description LIKE :q OR r.ingredients LIKE :q ORDER BY r.created_at DESC";
+    public function search(string $query, string $sort = 'latest'): array {
+        $orderClause = "ORDER BY r.created_at DESC";
+        if ($sort === 'oldest') { $orderClause = "ORDER BY r.created_at ASC"; }
+        if ($sort === 'time') { $orderClause = "ORDER BY r.prep_time ASC"; }
+
+        $sql = "SELECT r.*, c.name as category_name, u.username, u.nickname 
+                FROM recipes r 
+                LEFT JOIN categories c ON r.category_id = c.id 
+                LEFT JOIN users u ON r.created_by = u.id 
+                WHERE r.title LIKE :q OR r.description LIKE :q OR r.ingredients LIKE :q 
+                $orderClause";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':q' => "%$query%"]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    
     public function getById(int $id): ?array {
         $sql = "SELECT r.*, c.name as category_name, u.username as author_name FROM recipes r LEFT JOIN categories c ON r.category_id = c.id LEFT JOIN users u ON r.created_by = u.id WHERE r.id = :id";
         $stmt = $this->db->prepare($sql); $stmt->execute([':id' => $id]);

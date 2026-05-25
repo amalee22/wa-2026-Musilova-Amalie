@@ -19,10 +19,19 @@
         </button>
     </div>
 
-    <form method="GET" action="<?= BASE_URL ?>/index.php" class="w-full xl:w-[28rem] flex shadow-sm shrink-0">
+   <form method="GET" action="<?= BASE_URL ?>/index.php" class="w-full xl:w-auto flex flex-col sm:flex-row shadow-sm shrink-0 gap-2 sm:gap-0">
         <input type="hidden" name="url" value="recipe/index">
-        <input type="text" name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Hledat recept, ingredienci..." class="w-full bg-white border border-slate-200 rounded-l-2xl px-5 py-3 focus:ring-2 focus:ring-bake-blue outline-none transition-all text-slate-700">
-        <button type="submit" class="bg-bake-brown text-bake-cream px-6 rounded-r-2xl font-bold hover:bg-opacity-90 transition text-lg"><i class="fas fa-search"></i></button>
+        
+        <select name="sort" onchange="this.form.submit()" class="bg-white border border-slate-200 sm:rounded-l-2xl sm:rounded-r-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-bake-blue outline-none text-slate-700 font-medium">
+            <option value="latest" <?= (isset($_GET['sort']) && $_GET['sort'] == 'latest') ? 'selected' : '' ?>>Nejnovější</option>
+            <option value="oldest" <?= (isset($_GET['sort']) && $_GET['sort'] == 'oldest') ? 'selected' : '' ?>>Nejstarší</option>
+            <option value="time" <?= (isset($_GET['sort']) && $_GET['sort'] == 'time') ? 'selected' : '' ?>>Nejrychlejší příprava</option>
+        </select>
+
+        <div class="flex flex-1">
+            <input type="text" name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Hledat recept..." class="w-full bg-white border-y border-l border-r sm:border-r-0 border-slate-200 sm:rounded-none rounded-l-xl px-5 py-3 focus:ring-2 focus:ring-bake-blue outline-none transition-all text-slate-700">
+            <button type="submit" class="bg-bake-brown text-bake-cream px-6 sm:rounded-r-2xl rounded-r-xl font-bold hover:bg-opacity-90 transition text-lg"><i class="fas fa-search"></i></button>
+        </div>
     </form>
 
 </div>

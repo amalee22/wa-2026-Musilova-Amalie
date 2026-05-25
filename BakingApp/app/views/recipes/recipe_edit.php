@@ -9,6 +9,8 @@
 
     <form action="<?= BASE_URL ?>/index.php?url=recipe/update/<?= htmlspecialchars($recipe['id']) ?>" method="post" enctype="multipart/form-data" class="space-y-8">
 
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div class="sm:col-span-2">
                 <label for="title" class="block text-sm font-semibold text-bake-brown mb-2">Název receptu <span class="text-bake-blue">*</span></label>
