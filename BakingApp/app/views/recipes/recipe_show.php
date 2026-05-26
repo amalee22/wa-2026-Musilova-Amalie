@@ -1,12 +1,14 @@
-<?php require_once '../app/views/layout/header.php'; ?>
 <?php 
-/** * @var array $recipe 
- * @var int $likesCount 
- * @var bool $isLiked 
- * @var bool $isFavorited 
- * @var array $similarRecipes 
- * @var array $comments 
+/**
+ * @var array $recipe
+ * @var array $comments
+ * @var array $similarRecipes
+ * @var int $likesCount
+ * @var bool $isLiked
+ * @var bool $isFavorited
  */
+require_once '../app/views/layout/header.php'; 
+
 $ingredientsList = array_filter(array_map('trim', explode("\n", $recipe['ingredients'] ?? '')));
 $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instructions'] ?? '')));
 ?>
@@ -147,12 +149,15 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                 <a href="<?= BASE_URL ?>/index.php?url=recipe/edit/<?= $recipe['id'] ?>" class="bg-bake-brown hover:bg-opacity-90 text-bake-cream px-8 py-3.5 rounded-2xl shadow-lg font-bold flex items-center gap-2">
                     <i class="fas fa-pen"></i> <?= $isAuthor ? 'Upravit můj recept' : 'Upravit recept (Admin)' ?>
                 </a>
-                <a href="<?= BASE_URL ?>/index.php?url=recipe/delete/<?= $recipe['id'] ?>" onclick="return confirm('Opravdu chcete tento recept trvale smazat?')" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3.5 rounded-2xl shadow-lg font-bold flex items-center gap-2">
-                    <i class="fas fa-trash"></i> Smazat
-                </a>
+                
+                <form action="<?= BASE_URL ?>/index.php?url=recipe/delete/<?= $recipe['id'] ?>" method="POST" onsubmit="return confirm('Opravdu chcete tento recept trvale smazat?')" class="inline-block">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3.5 rounded-2xl shadow-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-trash"></i> Smazat
+                    </button>
+                </form>
             </div>
         <?php endif; ?>
-
 
         <?php if (!empty($similarRecipes)): ?>
         <div class="mt-16 pt-16 border-t border-slate-100 no-print">
@@ -181,13 +186,13 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
         </div>
         <?php endif; ?>
 
-
         <div class="mt-16 pt-16 border-t border-slate-100 no-print">
             <h3 class="text-3xl font-black text-bake-brown mb-8"><i class="far fa-comments text-bake-blue mr-3"></i>Hodnocení pekařů</h3>
 
             <?php if (isset($_SESSION['user_id'])): ?>
                 <div class="bg-bake-cream/20 p-8 rounded-3xl border border-bake-cream mb-10">
                     <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         <input type="hidden" name="recipe_id" value="<?= htmlspecialchars($recipe['id']) ?>">
                         <textarea name="text" rows="3" required placeholder="Jak se vám recept povedl? Podělte se o výsledek..." class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-bake-blue outline-none transition-all resize-none mb-4 text-slate-700"></textarea>
                         <button type="submit" class="bg-bake-blue hover:bg-opacity-80 text-bake-brown px-8 py-3 rounded-2xl font-black transition shadow-sm">
@@ -219,11 +224,17 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                                         $isCommentAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $comment['user_id'];
                                     ?>
                                     <?php if ($isCommentAuthor || $isAdmin): ?>
-                                        <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <?php if ($isCommentAuthor): ?>
                                                 <a href="<?= BASE_URL ?>/index.php?url=recipe/editComment/<?= $comment['id'] ?>" class="text-bake-blue hover:text-bake-brown transition-colors text-sm font-bold"><i class="fas fa-pen"></i></a>
                                             <?php endif; ?>
-                                            <a href="<?= BASE_URL ?>/index.php?url=recipe/deleteComment/<?= $comment['id'] ?>" onclick="return confirm('Opravdu smazat komentář?')" class="text-red-400 hover:text-red-600 transition-colors text-sm font-bold"><i class="fas fa-trash"></i></a>
+                                            
+                                            <form action="<?= BASE_URL ?>/index.php?url=recipe/deleteComment/<?= $comment['id'] ?>" method="POST" onsubmit="return confirm('Opravdu smazat komentář?')" class="inline-block m-0 p-0">
+                                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                <button type="submit" class="bg-transparent border-0 text-red-400 hover:text-red-600 cursor-pointer p-0 transition-colors text-sm font-bold">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     <?php endif; ?>
                                 </div>

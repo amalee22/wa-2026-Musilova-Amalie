@@ -6,6 +6,8 @@
         <h2 class="text-3xl font-bold text-bake-brown mb-8"><i class="fas fa-user-circle mr-3 text-bake-blue"></i>Můj profil</h2>
         
         <form action="<?= BASE_URL ?>/index.php?url=auth/updateProfile" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            
             <div>
                 <label class="block text-sm font-bold text-bake-brown mb-2">Přezdívka</label>
                 <input type="text" name="nickname" value="<?= htmlspecialchars($user['nickname'] ?? '') ?>" class="w-full bg-bake-cream/20 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-bake-blue transition-all">

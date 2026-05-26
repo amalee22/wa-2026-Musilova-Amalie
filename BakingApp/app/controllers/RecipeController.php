@@ -14,18 +14,19 @@ class RecipeController {
         $query = $_GET['q'] ?? '';
         $sort = $_GET['sort'] ?? 'latest'; 
         
-        // Výpočet stránkování
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
-        $limit = 8; // Kolik receptů na jednu stranu chceme
+        $limit = 8;
         $offset = ($page - 1) * $limit;
         
-        require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php';
-        $db = (new Database())->getConnection(); $recipeModel = new Recipe($db);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Recipe.php';
+        $db = (new Database())->getConnection(); 
+        $recipeModel = new Recipe($db);
         
         if ($query) {
             $recipes = $recipeModel->search($query, $sort); 
-            $totalPages = 1; // Při vyhledávání stránkování schováme
+            $totalPages = 1;
         } else {
             $totalRecipes = $recipeModel->getTotalCount();
             $totalPages = ceil($totalRecipes / $limit);
@@ -37,36 +38,45 @@ class RecipeController {
 
     public function create() {
         $this->requireAuth();
-        require_once '../app/models/Database.php'; require_once '../app/models/Category.php';
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Category.php';
         $db = (new Database())->getConnection();
         $categories = (new Category($db))->getAllCategories();
         require_once '../app/views/recipes/recipe_create.php';
     }
 
     public function show($id = null) {
-        if (!$id) { $this->addErrorMessage('Nebylo zadáno ID receptu.'); header('Location: ' . BASE_URL . '/index.php'); exit; }
-        require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php'; require_once '../app/models/Comment.php'; require_once '../app/models/Like.php'; require_once '../app/models/Favorite.php';
+        if (!$id) { 
+            $this->addErrorMessage('Nebylo zadáno ID receptu.'); 
+            header('Location: ' . BASE_URL . '/index.php'); 
+            exit; 
+        }
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Recipe.php'; 
+        require_once '../app/models/Comment.php'; 
+        require_once '../app/models/Like.php'; 
+        require_once '../app/models/Favorite.php';
 
         $db = (new Database())->getConnection();
         $recipeModel = new Recipe($db);
-        $recipe = $recipeModel->getById($id);
+        $recipe = $recipeModel->getById((int)$id);
         
-        if (!$recipe) { $this->addErrorMessage('Hledaný recept v databázi neexistuje.'); header('Location: ' . BASE_URL . '/index.php'); exit; }
-
-        // Načtení podobných receptů
-        $similarRecipes = $recipeModel->getSimilar((int)$recipe['category_id'], $id);
-
-        $commentModel = new Comment($db);
-        $comments = $commentModel->getByRecipeId($id);
-
-        $likeModel = new Like($db); $favModel = new Favorite($db);
-        $likesCount = $likeModel->getCount($id);
-        $isLiked = false; $isFavorited = false;
-
-        if (isset($_SESSION['user_id'])) {
-            $isLiked = $likeModel->hasLiked($_SESSION['user_id'], $id);
-            $isFavorited = $favModel->hasFavorited($_SESSION['user_id'], $id);
+        if (!$recipe) { 
+            $this->addErrorMessage('Recept neexistuje.'); 
+            header('Location: ' . BASE_URL . '/index.php'); 
+            exit; 
         }
+
+        $similarRecipes = $recipeModel->getSimilar((int)$recipe['category_id'], (int)$id);
+        $commentModel = new Comment($db);
+        $comments = $commentModel->getByRecipeId((int)$id);
+
+        $likeModel = new Like($db); 
+        $favModel = new Favorite($db);
+        $likesCount = $likeModel->getCount((int)$id);
+        $isLiked = isset($_SESSION['user_id']) ? $likeModel->hasLiked((int)$_SESSION['user_id'], (int)$id) : false;
+        $isFavorited = isset($_SESSION['user_id']) ? $favModel->hasFavorited((int)$_SESSION['user_id'], (int)$id) : false;
+
         require_once '../app/views/recipes/recipe_show.php';
     }
 
@@ -74,16 +84,18 @@ class RecipeController {
         $this->requireAuth();
         if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
         
-        require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php'; require_once '../app/models/Category.php';
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Recipe.php'; 
+        require_once '../app/models/Category.php';
 
         $db = (new Database())->getConnection();
         $recipeModel = new Recipe($db);
-        $recipe = $recipeModel->getById($id);
+        $recipe = $recipeModel->getById((int)$id);
 
         $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 
         if (!$recipe || ($recipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
-            $this->addErrorMessage('Nemáte oprávnění upravovat cizí recept.');
+            $this->addErrorMessage('Nemáte oprávnění k úpravě tohoto receptu.');
             header('Location: ' . BASE_URL . '/index.php'); exit;
         }
 
@@ -94,13 +106,11 @@ class RecipeController {
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                $this->addErrorMessage('Neplatný požadavek (CSRF selhalo). Zkuste to znovu.');
+                $this->addErrorMessage('Neplatný požadavek (CSRF).');
                 header('Location: ' . BASE_URL . '/index.php?url=recipe/create'); exit;
             }
 
             $this->requireAuth();
-            $userId = $_SESSION['user_id'];
-
             $title = trim($_POST['title'] ?? '');
             $description = trim($_POST['description'] ?? '');
             $ingredients = trim($_POST['ingredients'] ?? '');
@@ -110,10 +120,12 @@ class RecipeController {
             
             $uploadedImages = $this->processImageUploads();
 
-            require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php';
-            $db = (new Database())->getConnection(); $recipeModel = new Recipe($db);
+            require_once '../app/models/Database.php'; 
+            require_once '../app/models/Recipe.php';
+            $db = (new Database())->getConnection(); 
+            $recipeModel = new Recipe($db);
             
-            if ($recipeModel->create($title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages, $userId)) {
+            if ($recipeModel->create($title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages, (int)$_SESSION['user_id'])) {
                 $this->addSuccessMessage('Recept byl úspěšně uložen.');
             } else {
                 $this->addErrorMessage('Nastala chyba při ukládání do databáze.');
@@ -124,12 +136,11 @@ class RecipeController {
 
     public function update($id = null) {
         $this->requireAuth();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                $this->addErrorMessage('Neplatný požadavek (CSRF selhalo). Zkuste to znovu.');
-                header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . $id); exit;
+                $this->addErrorMessage('Neplatný požadavek (CSRF).');
+                header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . (int)$id); exit;
             }
-
             $title = trim($_POST['title'] ?? '');
             $description = trim($_POST['description'] ?? '');
             $ingredients = trim($_POST['ingredients'] ?? '');
@@ -137,14 +148,16 @@ class RecipeController {
             $category = (int)($_POST['category'] ?? 0);
             $prep_time = (int)($_POST['prep_time'] ?? 0);
 
-            require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php';
-            $db = (new Database())->getConnection(); $recipeModel = new Recipe($db);
+            require_once '../app/models/Database.php'; 
+            require_once '../app/models/Recipe.php';
+            $db = (new Database())->getConnection(); 
+            $recipeModel = new Recipe($db);
             
-            $existingRecipe = $recipeModel->getById($id);
+            $existingRecipe = $recipeModel->getById((int)$id);
             $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 
             if (!$existingRecipe || ($existingRecipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
-                $this->addErrorMessage('Nemáte oprávnění upravovat cizí recept.');
+                $this->addErrorMessage('Nemáte oprávnění.');
                 header('Location: ' . BASE_URL . '/index.php'); exit;
             }
 
@@ -162,12 +175,12 @@ class RecipeController {
                 }
             }
 
-            if ($recipeModel->update($id, $title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages)) { 
+            if ($recipeModel->update((int)$id, $title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages)) { 
                 $this->addSuccessMessage('Recept byl úspěšně upraven.'); 
             } else { 
-                $this->addErrorMessage('Nastala chyba při ukládání změn.'); 
+                $this->addErrorMessage('Nastala chyba při ukládání.'); 
             }
-            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . $id); exit;
+            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$id); exit;
         }
     }
 
@@ -175,14 +188,16 @@ class RecipeController {
         $this->requireAuth();
         if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
         
-        require_once '../app/models/Database.php'; require_once '../app/models/Recipe.php';
-        $db = (new Database())->getConnection(); $recipeModel = new Recipe($db);
-        $recipe = $recipeModel->getById($id);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Recipe.php';
+        $db = (new Database())->getConnection(); 
+        $recipeModel = new Recipe($db);
+        $recipe = $recipeModel->getById((int)$id);
         
         $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
 
         if (!$recipe || ($recipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
-            $this->addErrorMessage('Nemáte oprávnění k tomuto úkonu.');
+            $this->addErrorMessage('Nemáte oprávnění.');
             header('Location: ' . BASE_URL . '/index.php'); exit;
         }
         
@@ -195,8 +210,7 @@ class RecipeController {
             }
         }
         
-        if ($recipeModel->delete($id)) { $this->addSuccessMessage('Recept byl smazán.'); } 
-        else { $this->addErrorMessage('Nastala chyba.'); }
+        if ($recipeModel->delete((int)$id)) { $this->addSuccessMessage('Recept byl trvale smazán.'); } 
         header('Location: ' . BASE_URL . '/index.php'); exit;
     }
 
@@ -206,29 +220,31 @@ class RecipeController {
             $recipeId = (int)($_POST['recipe_id'] ?? 0);
             $text = htmlspecialchars(trim($_POST['text'] ?? ''));
             if ($recipeId > 0 && !empty($text)) {
-                require_once '../app/models/Database.php'; require_once '../app/models/Comment.php';
-                $db = (new Database())->getConnection(); $commentModel = new Comment($db);
-                if ($commentModel->create($recipeId, $_SESSION['user_id'], $text)) { $this->addSuccessMessage('Komentář byl přidán.'); } 
-                else { $this->addErrorMessage('Nastala chyba.'); }
+                require_once '../app/models/Database.php'; 
+                require_once '../app/models/Comment.php';
+                $db = (new Database())->getConnection(); 
+                $commentModel = new Comment($db);
+                $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text);
+                $this->addSuccessMessage('Komentář byl přidán.');
             }
-            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . $recipeId); exit;
+            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
         }
     }
 
     public function editComment($id = null) {
         $this->requireAuth();
         if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
-        
-        require_once '../app/models/Database.php'; require_once '../app/models/Comment.php';
-        $db = (new Database())->getConnection(); $commentModel = new Comment($db);
-        $comment = $commentModel->getById($id);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Comment.php';
+        $db = (new Database())->getConnection(); 
+        $commentModel = new Comment($db);
+        $comment = $commentModel->getById((int)$id);
         
         $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
         if (!$comment || ($comment['user_id'] != $_SESSION['user_id'] && !$isAdmin)) {
-            $this->addErrorMessage('Nemáte oprávnění upravovat tento komentář.');
+            $this->addErrorMessage('Nemáte oprávnění.');
             header('Location: ' . BASE_URL . '/index.php'); exit;
         }
-        
         require_once '../app/views/recipes/comment_edit.php';
     }
 
@@ -236,31 +252,30 @@ class RecipeController {
         $this->requireAuth();
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $text = htmlspecialchars(trim($_POST['text'] ?? ''));
-            require_once '../app/models/Database.php'; require_once '../app/models/Comment.php';
-            $db = (new Database())->getConnection(); $commentModel = new Comment($db);
-            $comment = $commentModel->getById($id);
+            require_once '../app/models/Database.php'; 
+            require_once '../app/models/Comment.php';
+            $db = (new Database())->getConnection(); 
+            $commentModel = new Comment($db);
+            $comment = $commentModel->getById((int)$id);
             
             $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
             if (!$comment || ($comment['user_id'] != $_SESSION['user_id'] && !$isAdmin)) {
                 $this->addErrorMessage('Nemáte oprávnění.');
                 header('Location: ' . BASE_URL . '/index.php'); exit;
             }
-            
-            if (!empty($text)) {
-                $commentModel->update($id, $text);
-                $this->addSuccessMessage('Komentář byl úspěšně upraven.');
-            }
-            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . $comment['recipe_id']); exit;
+            if (!empty($text)) { $commentModel->update((int)$id, $text); }
+            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$comment['recipe_id']); exit;
         }
     }
 
     public function deleteComment($id = null) {
         $this->requireAuth();
         if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
-        
-        require_once '../app/models/Database.php'; require_once '../app/models/Comment.php';
-        $db = (new Database())->getConnection(); $commentModel = new Comment($db);
-        $comment = $commentModel->getById($id);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Comment.php';
+        $db = (new Database())->getConnection(); 
+        $commentModel = new Comment($db);
+        $comment = $commentModel->getById((int)$id);
         
         $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
         if (!$comment || ($comment['user_id'] != $_SESSION['user_id'] && !$isAdmin)) {
@@ -269,18 +284,21 @@ class RecipeController {
         }
         
         $recipeId = $comment['recipe_id'];
-        $commentModel->delete($id);
-        $this->addSuccessMessage('Komentář byl smazán.');
-        header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . $recipeId); exit;
+        $commentModel->delete((int)$id);
+        $this->addSuccessMessage('Komentář smazán.');
+        header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
     }
 
     public function toggleLike() {
         header('Content-Type: application/json');
         if (!isset($_SESSION['user_id'])) { echo json_encode(['error' => 'Not logged in']); exit; }
-        $data = json_decode(file_get_contents("php://input"), true); $recipeId = (int)($data['recipe_id'] ?? 0);
-        require_once '../app/models/Database.php'; require_once '../app/models/Like.php';
-        $db = (new Database())->getConnection(); $likeModel = new Like($db);
-        $result = $likeModel->toggleLike($_SESSION['user_id'], $recipeId);
+        $data = json_decode(file_get_contents("php://input"), true); 
+        $recipeId = (int)($data['recipe_id'] ?? 0);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Like.php';
+        $db = (new Database())->getConnection(); 
+        $likeModel = new Like($db);
+        $result = $likeModel->toggleLike((int)$_SESSION['user_id'], $recipeId);
         $result['count'] = $likeModel->getCount($recipeId);
         echo json_encode($result); exit;
     }
@@ -288,13 +306,16 @@ class RecipeController {
     public function toggleFavorite() {
         header('Content-Type: application/json');
         if (!isset($_SESSION['user_id'])) { echo json_encode(['error' => 'Not logged in']); exit; }
-        $data = json_decode(file_get_contents("php://input"), true); $recipeId = (int)($data['recipe_id'] ?? 0);
-        require_once '../app/models/Database.php'; require_once '../app/models/Favorite.php';
-        $db = (new Database())->getConnection(); $favModel = new Favorite($db);
-        echo json_encode($favModel->toggleFavorite($_SESSION['user_id'], $recipeId)); exit;
+        $data = json_decode(file_get_contents("php://input"), true); 
+        $recipeId = (int)($data['recipe_id'] ?? 0);
+        require_once '../app/models/Database.php'; 
+        require_once '../app/models/Favorite.php';
+        $db = (new Database())->getConnection(); 
+        $favModel = new Favorite($db);
+        echo json_encode($favModel->toggleFavorite((int)$_SESSION['user_id'], $recipeId)); exit;
     }
 
-   protected function processImageUploads() {
+    protected function processImageUploads() {
         $uploadedFiles = []; 
         $uploadDir = __DIR__ . '/../../public/uploads/';
         if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
@@ -306,7 +327,6 @@ class RecipeController {
             for ($i = 0; $i < $fileCount; $i++) {
                 if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
                     $tmpName = $_FILES['images']['tmp_name'][$i];
-                    
                     $finfo = finfo_open(FILEINFO_MIME_TYPE);
                     $mimeType = finfo_file($finfo, $tmpName);
                     finfo_close($finfo);

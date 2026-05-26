@@ -11,7 +11,6 @@ class AuthController {
 
     public function storeUser() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Místo htmlspecialchars používáme jen trim pro vyčištění mezer na začátku a konci
             $username = trim($_POST['username'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
@@ -21,8 +20,16 @@ class AuthController {
             $lastName = trim($_POST['last_name'] ?? '');
             $nickname = trim($_POST['nickname'] ?? '');
             
-            if (empty($username) || empty($email) || empty($password)) { $this->addErrorMessage('Vyplňte povinná pole.'); header('Location: ' . BASE_URL . '/index.php?url=auth/register'); exit; }
-            if ($password !== $passwordConfirm) { $this->addErrorMessage('Hesla se neshodují.'); header('Location: ' . BASE_URL . '/index.php?url=auth/register'); exit; }
+            if (empty($username) || empty($email) || empty($password)) { 
+                $this->addErrorMessage('Vyplňte povinná pole.'); 
+                header('Location: ' . BASE_URL . '/index.php?url=auth/register'); 
+                exit; 
+            }
+            if ($password !== $passwordConfirm) { 
+                $this->addErrorMessage('Hesla se neshodují.'); 
+                header('Location: ' . BASE_URL . '/index.php?url=auth/register'); 
+                exit; 
+            }
             
             if (strlen($password) < 8 || !preg_match("/[0-9]/", $password) || !preg_match("/[A-Z]/", $password)) {
                 $this->addErrorMessage('Heslo musí mít alespoň 8 znaků, obsahovat číslo a velké písmeno.');
@@ -35,16 +42,23 @@ class AuthController {
             
             if ($userModel->register($username, $email, $password, $firstName, $lastName, $nickname)) {
                 $this->addSuccessMessage('Registrace úspěšná.'); header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit;
-            } else { $this->addErrorMessage('Email je již obsazen.'); header('Location: ' . BASE_URL . '/index.php?url=auth/register'); exit; }
+            } else { 
+                $this->addErrorMessage('Email je již obsazen.'); header('Location: ' . BASE_URL . '/index.php?url=auth/register'); exit; 
+            }
         }
     }
 
     public function updateProfile() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+            // OPRAVENO: Validace CSRF tokenu při úpravě profilu
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                $this->addErrorMessage('Neplatný požadavek (CSRF ochrana).');
+                header('Location: ' . BASE_URL . '/index.php?url=auth/profile'); exit;
+            }
+
             require_once '../app/models/Database.php'; require_once '../app/models/User.php';
             $db = (new Database())->getConnection();
             
-            // Pouze trim() místo htmlspecialchars
             $data = [
                 'nickname' => trim($_POST['nickname'] ?? ''),
                 'first_name' => trim($_POST['first_name'] ?? ''),
@@ -55,7 +69,9 @@ class AuthController {
             if ((new User($db))->updateProfile($_SESSION['user_id'], $data)) {
                 $_SESSION['user_name'] = !empty($data['nickname']) ? $data['nickname'] : $_SESSION['user_name'];
                 $this->addSuccessMessage('Profil byl aktualizován.');
-            } else { $this->addErrorMessage('Chyba při ukládání.'); }
+            } else { 
+                $this->addErrorMessage('Chyba při ukládání.'); 
+            }
             header('Location: ' . BASE_URL . '/index.php?url=auth/profile'); exit;
         }
     }
@@ -74,7 +90,9 @@ class AuthController {
                 $_SESSION['is_admin'] = (int)($user['is_admin'] ?? 0);
 
                 $this->addSuccessMessage('Vítejte zpět!'); header('Location: ' . BASE_URL . '/index.php'); exit;
-            } else { $this->addErrorMessage('Chybné údaje.'); header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit; }
+            } else { 
+                $this->addErrorMessage('Chybné údaje.'); header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit; 
+            }
         }
     }
 
@@ -89,7 +107,13 @@ class AuthController {
         require_once '../app/views/auth/profile.php';
     }
 
-    public function logout() { unset($_SESSION['user_id']); unset($_SESSION['user_name']); unset($_SESSION['is_admin']); header('Location: ' . BASE_URL . '/index.php'); exit; }
+    public function logout() { 
+        unset($_SESSION['user_id']); 
+        unset($_SESSION['user_name']); 
+        unset($_SESSION['is_admin']); 
+        header('Location: ' . BASE_URL . '/index.php'); 
+        exit; 
+    }
     
     protected function addSuccessMessage($message) { $_SESSION['messages']['success'][] = $message; }
     protected function addErrorMessage($message) { $_SESSION['messages']['error'][] = $message; }

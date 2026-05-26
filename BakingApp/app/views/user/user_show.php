@@ -18,9 +18,12 @@
 
         <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1 && $user['id'] != $_SESSION['user_id']): ?>
             <div class="shrink-0 md:pl-8 md:border-l border-slate-100">
-                <a href="<?= BASE_URL ?>/index.php?url=user/delete/<?= $user['id'] ?>" onclick="return confirm('Tato akce trvale smaže uživatele a všechny jeho recepty i komentáře. Opravdu pokračovat?')" class="inline-flex items-center gap-2 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-200 px-6 py-3 rounded-xl font-bold transition-colors">
-                    <i class="fas fa-trash"></i> Smazat účet (Admin)
-                </a>
+                <form action="<?= BASE_URL ?>/index.php?url=user/delete/<?= $user['id'] ?>" method="POST" onsubmit="return confirm('Tato akce trvale smaže uživatele a všechny jeho recepty i komentáře. Opravdu pokračovat?')">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <button type="submit" class="inline-flex items-center gap-2 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-200 px-6 py-3 rounded-xl font-bold transition-colors">
+                        <i class="fas fa-trash"></i> Smazat účet (Admin)
+                    </button>
+                </form>
             </div>
         <?php endif; ?>
     </div>

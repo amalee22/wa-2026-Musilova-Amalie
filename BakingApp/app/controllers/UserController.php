@@ -20,17 +20,17 @@ class UserController {
         require_once '../app/models/Recipe.php';
         
         $db = (new Database())->getConnection();
-        $user = (new User($db))->findById($id);
+        $user = (new User($db))->findById((int)$id);
         
         if (!$user) { header('Location: ' . BASE_URL . '/index.php'); exit; }
         
         $recipeModel = new Recipe($db);
-        $userRecipes = $recipeModel->getByUserId($id);
+        $userRecipes = $recipeModel->getByUserId((int)$id);
         
         require_once '../app/views/user/user_show.php';
     }
 
-    // NOVÉ: Mazání uživatelů (pouze pro Administrátora)
+    // OPRAVENO: Mazání uživatelů nyní vyžaduje POST a CSRF token
     public function delete($id = null) {
         if (!isset($_SESSION['user_id'])) { 
             header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit; 
@@ -40,6 +40,12 @@ class UserController {
         if (!$isAdmin) { 
             $this->addErrorMessage('Nemáte oprávnění administrátora k této akci.');
             header('Location: ' . BASE_URL . '/index.php'); exit; 
+        }
+
+        // Zabezpečení proti CSRF a vynucení POST požadavku
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            $this->addErrorMessage('Neplatný požadavek (CSRF ochrana).');
+            header('Location: ' . BASE_URL . '/index.php?url=user/index'); exit;
         }
 
         if (!$id) { header('Location: ' . BASE_URL . '/index.php?url=user/index'); exit; }
@@ -53,7 +59,7 @@ class UserController {
         if ($id == $_SESSION['user_id']) {
             $this->addErrorMessage('Nemůžete smazat svůj vlastní administrátorský účet.');
         } else {
-            if ($userModel->delete($id)) {
+            if ($userModel->delete((int)$id)) {
                 $this->addSuccessMessage('Uživatel a všechny jeho recepty byly trvale smazány.');
             } else {
                 $this->addErrorMessage('Nastala chyba při mazání uživatele.');
