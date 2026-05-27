@@ -42,10 +42,12 @@
                                 <div class="w-full h-full flex items-center justify-center text-bake-blue"><i class="fas fa-cookie-bite text-xl"></i></div>
                             <?php endif; ?>
                         </div>
-                        <div>
-                            <span class="text-xs font-bold text-bake-blue uppercase tracking-wider block mb-1"><?= htmlspecialchars($recipe['category_name'] ?? 'Jiné') ?></span>
+                        
+                        <div class="flex-1 min-w-0">
+                            <span class="text-xs font-bold text-bake-blue uppercase tracking-wider block mb-1 truncate"><?= htmlspecialchars($recipe['category_name'] ?? 'Jiné') ?></span>
                             <h4 class="font-bold text-bake-brown truncate group-hover:text-bake-blue transition-colors"><?= htmlspecialchars($recipe['title']) ?></h4>
                         </div>
+                        
                     </a>
                 <?php endforeach; ?>
             </div>

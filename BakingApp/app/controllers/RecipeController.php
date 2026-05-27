@@ -218,13 +218,20 @@ class RecipeController {
         $this->requireAuth();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $recipeId = (int)($_POST['recipe_id'] ?? 0);
+            
+            // OPRAVA: Chytáme parent_id z formuláře, pokud tam je
+            $parentId = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
+            
             $text = htmlspecialchars(trim($_POST['text'] ?? ''));
+            
             if ($recipeId > 0 && !empty($text)) {
                 require_once '../app/models/Database.php'; 
                 require_once '../app/models/Comment.php';
                 $db = (new Database())->getConnection(); 
                 $commentModel = new Comment($db);
-                $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text);
+                
+                // Předáváme i parentId
+                $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text, $parentId);
                 $this->addSuccessMessage('Komentář byl přidán.');
             }
             header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
@@ -345,6 +352,41 @@ class RecipeController {
         }
         return $uploadedFiles;
     }
+
+    public function deleteImage($recipeId = null, $fileName = null) {
+    $this->requireAuth();
+    if (!$recipeId || !$fileName) { header('Location: ' . BASE_URL . '/index.php'); exit; }
+
+    require_once '../app/models/Database.php';
+    require_once '../app/models/Recipe.php';
+    $db = (new Database())->getConnection();
+    $recipeModel = new Recipe($db);
+    $recipe = $recipeModel->getById((int)$recipeId);
+
+    // Kontrola oprávnění (pouze autor nebo admin)
+    $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+    if (!$recipe || ($recipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
+        $this->addErrorMessage('Nemáte oprávnění.');
+        header('Location: ' . BASE_URL . '/index.php'); exit;
+    }
+
+    // Úprava pole obrázků v DB
+    $images = json_decode($recipe['images'] ?? '[]', true);
+    if (($key = array_search($fileName, $images)) !== false) {
+        unset($images[$key]);
+        $images = array_values($images); // reset indexů
+        
+        // Smazání fyzického souboru
+        $filePath = __DIR__ . '/../../public/uploads/' . $fileName;
+        if (file_exists($filePath)) { unlink($filePath); }
+
+        // Update DB
+        $recipeModel->update((int)$recipeId, $recipe['title'], $recipe['description'], $recipe['ingredients'], $recipe['instructions'], $recipe['category_id'], $recipe['prep_time'], $images);
+        $this->addSuccessMessage('Obrázek byl smazán.');
+    }
+
+    header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . (int)$recipeId); exit;
+}
 
     protected function addSuccessMessage($message) { $_SESSION['messages']['success'][] = $message; }
     protected function addErrorMessage($message) { $_SESSION['messages']['error'][] = $message; }

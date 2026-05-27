@@ -1,80 +1,88 @@
 <?php require_once '../app/views/layout/header.php'; ?>
 
-<div class="mt-6 mb-6">
-    <h2 class="text-3xl font-bold text-bake-brown">Pečeme společně</h2>
-    <p class="text-slate-500 mt-1">Vaše denní dávka inspirace a komunitní pomoci.</p>
+<div class="text-center mt-8 mb-12">
+    <h2 class="text-4xl md:text-5xl font-black text-bake-brown tracking-tight">Pečeme společně</h2>
+    <p class="text-slate-500 mt-4 font-serif italic text-lg">Vaše denní dávka inspirace a komunitní pomoci.</p>
 </div>
 
-<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-10">
+<div class="border-y border-bake-cream py-5 mb-14 flex flex-col xl:flex-row justify-between items-center gap-8 bg-bake-cream/10 sticky top-0 z-30 backdrop-blur-md">
     
-    <div class="flex gap-3 overflow-x-auto pb-2 xl:pb-0 scrollbar-hide w-full xl:w-auto">
-        <button id="btn-tab-recipes" onclick="switchTab('tab-recipes')" class="tab-btn bg-bake-brown text-bake-cream px-6 py-3 rounded-2xl font-bold shadow-md transition-all whitespace-nowrap flex items-center gap-2">
-            <i class="fas fa-book-open"></i> Katalog receptů
+    <div class="flex gap-8 sm:gap-12 overflow-x-auto w-full xl:w-auto px-4 scrollbar-hide justify-center xl:justify-start">
+        <button id="btn-tab-recipes" onclick="switchTab('tab-recipes')" class="tab-btn flex flex-col items-center gap-2 text-bake-brown border-b-2 border-bake-brown pb-2 transition-all">
+            <i class="fas fa-book-open text-2xl"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Katalog</span>
         </button>
-        <button id="btn-tab-tips" onclick="switchTab('tab-tips')" class="tab-btn bg-white text-bake-brown border border-bake-cream hover:bg-bake-cream/50 px-6 py-3 rounded-2xl font-bold transition-all whitespace-nowrap flex items-center gap-2">
-            <i class="fas fa-magic"></i> Tipy a triky
+        <button id="btn-tab-tips" onclick="switchTab('tab-tips')" class="tab-btn flex flex-col items-center gap-2 text-slate-400 border-b-2 border-transparent hover:text-bake-brown pb-2 transition-all">
+            <i class="fas fa-magic text-2xl"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Tipy a triky</span>
         </button>
-        <button id="btn-tab-qa" onclick="switchTab('tab-qa')" class="tab-btn bg-white text-bake-brown border border-bake-cream hover:bg-bake-cream/50 px-6 py-3 rounded-2xl font-bold transition-all whitespace-nowrap flex items-center gap-2">
-            <i class="far fa-comments"></i> Komunitní Q&A
+        <button id="btn-tab-qa" onclick="switchTab('tab-qa')" class="tab-btn flex flex-col items-center gap-2 text-slate-400 border-b-2 border-transparent hover:text-bake-brown pb-2 transition-all">
+            <i class="far fa-comments text-2xl"></i>
+            <span class="text-xs font-bold uppercase tracking-widest">Komunita</span>
         </button>
     </div>
 
-   <form method="GET" action="<?= BASE_URL ?>/index.php" class="w-full xl:w-auto flex flex-col sm:flex-row shadow-sm shrink-0 gap-2 sm:gap-0">
+    <form method="GET" action="<?= BASE_URL ?>/index.php" class="w-full sm:w-auto flex items-center bg-white rounded-full border border-slate-200 shadow-sm p-1.5 focus-within:ring-2 focus-within:ring-bake-blue/50 transition-all mx-4 xl:mx-0">
         <input type="hidden" name="url" value="recipe/index">
         
-        <select name="sort" onchange="this.form.submit()" class="bg-white border border-slate-200 sm:rounded-l-2xl sm:rounded-r-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-bake-blue outline-none text-slate-700 font-medium">
+        <select name="sort" onchange="this.form.submit()" class="bg-transparent border-none text-xs font-bold text-slate-500 pl-4 pr-2 py-2 focus:ring-0 outline-none cursor-pointer uppercase tracking-wider appearance-none">
             <option value="latest" <?= (isset($_GET['sort']) && $_GET['sort'] == 'latest') ? 'selected' : '' ?>>Nejnovější</option>
             <option value="oldest" <?= (isset($_GET['sort']) && $_GET['sort'] == 'oldest') ? 'selected' : '' ?>>Nejstarší</option>
-            <option value="time" <?= (isset($_GET['sort']) && $_GET['sort'] == 'time') ? 'selected' : '' ?>>Nejrychlejší příprava</option>
+            <option value="time" <?= (isset($_GET['sort']) && $_GET['sort'] == 'time') ? 'selected' : '' ?>>Rychlovky</option>
         </select>
-
-        <div class="flex flex-1">
-            <input type="text" name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Hledat recept..." class="w-full bg-white border-y border-l border-r sm:border-r-0 border-slate-200 sm:rounded-none rounded-l-xl px-5 py-3 focus:ring-2 focus:ring-bake-blue outline-none transition-all text-slate-700">
-            <button type="submit" class="bg-bake-brown text-bake-cream px-6 sm:rounded-r-2xl rounded-r-xl font-bold hover:bg-opacity-90 transition text-lg"><i class="fas fa-search"></i></button>
-        </div>
+        
+        <div class="w-px h-5 bg-slate-200 mx-2"></div>
+        
+        <input type="text" name="q" value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" placeholder="Hledat recept..." class="bg-transparent border-none px-3 py-2 text-sm focus:ring-0 outline-none w-full sm:w-56 text-slate-700 font-medium placeholder-slate-400">
+        
+        <button type="submit" class="bg-bake-brown text-bake-cream w-9 h-9 rounded-full flex items-center justify-center hover:scale-105 transition shrink-0">
+            <i class="fas fa-search text-sm"></i>
+        </button>
     </form>
-
 </div>
 
 <div id="tab-recipes" class="tab-content block transition-all duration-500">
     <?php if (!empty($recipes)): ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <?php foreach ($recipes as $recipe): ?>
                 <?php 
                     $images = json_decode($recipe['images'] ?? '[]', true);
                     $coverImage = !empty($images) ? $images[0] : null;
                 ?>
                 
-                <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full">
-                    <div class="w-full h-48 mb-5 rounded-xl overflow-hidden bg-bake-cream/30 border border-bake-cream relative">
+                <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full">
+                    <div class="w-full h-56 mb-5 rounded-2xl overflow-hidden bg-bake-cream/30 relative">
                         <?php if ($coverImage): ?>
-                            <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($coverImage) ?>" alt="Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($coverImage) ?>" alt="Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                         <?php else: ?>
                             <div class="w-full h-full flex items-center justify-center text-bake-blue/50">
                                 <i class="fas fa-cookie-bite text-5xl"></i>
                             </div>
                         <?php endif; ?>
+                        
+                        <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur text-bake-brown text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
+                            <i class="far fa-clock text-bake-blue"></i> <?= htmlspecialchars($recipe['prep_time'] ?? 0) ?> min
+                        </div>
                     </div>
 
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="px-3 py-1 bg-bake-cream/50 text-bake-brown rounded-full text-xs font-semibold uppercase tracking-wider"><?= htmlspecialchars($recipe['category_name'] ?? 'Nezařazeno') ?></span>
-                        <span class="text-bake-blue font-bold"><i class="far fa-clock"></i> <?= htmlspecialchars($recipe['prep_time'] ?? 0) ?> min</span>
+                    <div class="mb-3">
+                        <span class="text-[10px] font-bold text-bake-blue uppercase tracking-widest"><?= htmlspecialchars($recipe['category_name'] ?? 'Nezařazeno') ?></span>
                     </div>
 
-                    <h3 class="text-xl font-bold text-bake-brown mb-1 leading-tight group-hover:text-bake-blue transition-colors">
+                    <h3 class="text-xl font-black text-bake-brown mb-2 leading-tight group-hover:text-bake-blue transition-colors">
                         <?= htmlspecialchars($recipe['title']) ?>
                     </h3>
                     
-                    <p class="text-xs text-slate-400 mb-4">
-                        od <a href="<?= BASE_URL ?>/index.php?url=user/show/<?= $recipe['created_by'] ?>" class="text-bake-blue hover:underline font-bold"><?= htmlspecialchars($recipe['nickname'] ?: $recipe['username']) ?></a>
+                    <p class="text-xs text-slate-400 mb-4 font-medium">
+                        od <a href="<?= BASE_URL ?>/index.php?url=user/show/<?= $recipe['created_by'] ?>" class="text-bake-brown hover:text-bake-blue transition-colors"><?= htmlspecialchars($recipe['nickname'] ?: $recipe['username']) ?></a>
                     </p>
 
-                    <p class="text-slate-500 text-sm mb-6 flex-1 line-clamp-2 overflow-hidden"><?= htmlspecialchars($recipe['description']) ?></p>
+                    <p class="text-slate-500 text-sm mb-6 flex-1 line-clamp-2 font-serif italic">"<?= htmlspecialchars($recipe['description']) ?>"</p>
 
-                    <div class="flex gap-2 pt-4 border-t border-slate-50">
-                        <a href="<?= BASE_URL ?>/index.php?url=recipe/show/<?= $recipe['id'] ?>" class="flex-1 bg-bake-cream/30 hover:bg-bake-blue/20 text-bake-brown hover:text-bake-brown text-center py-2 rounded-xl font-bold text-sm transition-colors">Detail</a>
+                    <div class="flex gap-3 pt-4 border-t border-slate-50 mt-auto">
+                        <a href="<?= BASE_URL ?>/index.php?url=recipe/show/<?= $recipe['id'] ?>" class="flex-1 bg-bake-cream/40 hover:bg-bake-brown text-bake-brown hover:text-bake-cream text-center py-2.5 rounded-xl font-bold text-sm transition-colors">Zobrazit recept</a>
                         <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['created_by']): ?>
-                            <a href="<?= BASE_URL ?>/index.php?url=recipe/edit/<?= $recipe['id'] ?>" class="flex-1 bg-slate-50 hover:bg-slate-200 text-slate-600 text-center py-2 rounded-xl font-bold text-sm transition-colors">Upravit</a>
+                            <a href="<?= BASE_URL ?>/index.php?url=recipe/edit/<?= $recipe['id'] ?>" class="w-12 flex items-center justify-center bg-slate-50 hover:bg-slate-200 text-slate-500 text-center rounded-xl font-bold transition-colors" title="Upravit"><i class="fas fa-pen"></i></a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -82,28 +90,28 @@
         </div>
 
         <?php if (!isset($_GET['q']) && isset($totalPages) && $totalPages > 1): ?>
-            <div class="flex justify-center items-center gap-2 mt-12 mb-8">
+            <div class="flex justify-center items-center gap-2 mt-16 mb-8">
                 <?php if ($page > 1): ?>
-                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page - 1 ?>" class="px-4 py-2 bg-white border border-bake-cream text-bake-brown font-bold rounded-xl hover:bg-bake-cream transition">Předchozí</a>
+                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page - 1 ?>" class="px-4 py-2 bg-white border border-slate-200 text-bake-brown font-bold rounded-xl hover:bg-bake-cream hover:border-bake-cream transition"><i class="fas fa-chevron-left text-xs"></i></a>
                 <?php endif; ?>
                 
-                <div class="flex gap-1">
+                <div class="flex gap-2">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $i ?>" class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition <?= ($i == $page) ? 'bg-bake-brown text-bake-cream shadow-md' : 'bg-white border border-bake-cream text-bake-brown hover:bg-bake-cream' ?>">
+                        <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $i ?>" class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition <?= ($i == $page) ? 'bg-bake-brown text-bake-cream shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:text-bake-brown hover:bg-bake-cream hover:border-bake-cream' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
                 </div>
 
                 <?php if ($page < $totalPages): ?>
-                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page + 1 ?>" class="px-4 py-2 bg-white border border-bake-cream text-bake-brown font-bold rounded-xl hover:bg-bake-cream transition">Další</a>
+                    <a href="<?= BASE_URL ?>/index.php?url=recipe/index&sort=<?= $sort ?>&page=<?= $page + 1 ?>" class="px-4 py-2 bg-white border border-slate-200 text-bake-brown font-bold rounded-xl hover:bg-bake-cream hover:border-bake-cream transition"><i class="fas fa-chevron-right text-xs"></i></a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
 
     <?php else: ?>
         <div class="flex flex-col items-center justify-center h-64 bg-white rounded-3xl border border-dashed border-slate-300">
-            <p class="text-slate-400 text-lg mb-4">
+            <p class="text-slate-400 text-lg mb-4 font-serif italic">
                 <?= !empty($_GET['q']) ? 'Pro tento výraz jsme nenašli žádný recept.' : 'Zatím tu žádné recepty nejsou.' ?>
             </p>
             <a href="<?= BASE_URL ?>/index.php" class="text-bake-blue font-bold hover:underline">Zpět na katalog</a>
@@ -274,6 +282,7 @@
 </div>
 
 <script>
+    // Aktualizovaný JS pro přepínání tabů, aby pracoval s novými třídami
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => {
             el.classList.add('hidden');
@@ -281,16 +290,16 @@
         });
         
         document.querySelectorAll('.tab-btn').forEach(el => {
-            el.classList.remove('bg-bake-brown', 'text-bake-cream', 'shadow-md');
-            el.classList.add('bg-white', 'text-bake-brown');
+            el.classList.remove('text-bake-brown', 'border-bake-brown');
+            el.classList.add('text-slate-400', 'border-transparent');
         });
 
         document.getElementById(tabId).classList.remove('hidden');
         document.getElementById(tabId).classList.add('block');
         
         const activeBtn = document.getElementById('btn-' + tabId);
-        activeBtn.classList.remove('bg-white', 'text-bake-brown');
-        activeBtn.classList.add('bg-bake-brown', 'text-bake-cream', 'shadow-md');
+        activeBtn.classList.remove('text-slate-400', 'border-transparent');
+        activeBtn.classList.add('text-bake-brown', 'border-bake-brown');
     }
 
     function toggleAnswer(qaId) {

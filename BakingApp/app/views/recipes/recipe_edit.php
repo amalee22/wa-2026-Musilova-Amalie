@@ -59,10 +59,17 @@
             <label class="block text-sm font-semibold text-bake-brown mb-2">Aktuální obrázky v databázi:</label>
             <div class="flex flex-wrap gap-4 p-4 bg-bake-cream/20 border border-bake-cream rounded-xl">
                 <?php foreach ($existingImages as $img): ?>
-                    <div class="w-24 h-24 overflow-hidden rounded-lg border border-bake-cream shadow-sm relative group">
-                        <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" alt="Obrázek" class="w-full h-full object-cover">
-                    </div>
-                <?php endforeach; ?>
+    <div class="relative group">
+        <div class="w-24 h-24 overflow-hidden rounded-lg border border-bake-cream shadow-sm">
+            <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" alt="Obrázek" class="w-full h-full object-cover">
+        </div>
+        <a href="<?= BASE_URL ?>/index.php?url=recipe/deleteImage/<?= $recipe['id'] ?>/<?= $img ?>" 
+           onclick="return confirm('Opravdu chcete tento obrázek smazat?')"
+           class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition shadow-lg opacity-0 group-hover:opacity-100">
+            &times;
+        </a>
+    </div>
+<?php endforeach; ?>
             </div>
             <p class="text-xs text-slate-500 mt-2">Pokud nahrajete nové obrázky, tyto staré budou přepsány.</p>
         </div>

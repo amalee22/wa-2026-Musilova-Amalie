@@ -239,6 +239,64 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                                     <?php endif; ?>
                                 </div>
                                 <p class="text-slate-700 leading-relaxed pr-10"><?= nl2br(htmlspecialchars($comment['text'])) ?></p>
+                                
+                                <?php if (isset($_SESSION['user_id'])): ?>
+                                    <button onclick="document.getElementById('reply-form-<?= $comment['id'] ?>').classList.toggle('hidden')" class="mt-3 text-sm font-bold text-bake-blue hover:text-bake-brown transition-colors">
+                                        <i class="fas fa-reply mr-1"></i> Odpovědět
+                                    </button>
+
+                                    <div id="reply-form-<?= $comment['id'] ?>" class="hidden mt-4 bg-bake-cream/20 p-5 rounded-2xl border border-bake-cream">
+                                        <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post">
+                                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                            <input type="hidden" name="parent_id" value="<?= $comment['id'] ?>">
+                                            <input type="hidden" name="recipe_id" value="<?= $recipe['id'] ?>">
+                                            <textarea name="text" rows="2" required placeholder="Vaše odpověď..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-bake-blue outline-none transition-all resize-none mb-3 text-slate-700"></textarea>
+                                            <button type="submit" class="bg-bake-brown hover:bg-opacity-90 text-bake-cream px-6 py-2 rounded-xl font-bold transition shadow-sm text-sm">
+                                                Odeslat odpověď
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($comment['replies'])): ?>
+                                    <div class="mt-6 space-y-4 border-l-2 border-bake-cream pl-6 ml-2">
+                                        <?php foreach ($comment['replies'] as $reply): ?>
+                                            <div class="flex items-start gap-4 group/reply">
+                                                <div class="w-8 h-8 rounded-full bg-bake-cream flex items-center justify-center text-bake-brown font-bold text-xs shrink-0">
+                                                    <?= strtoupper(substr(htmlspecialchars($reply['nickname'] ?: $reply['username']), 0, 1)) ?>
+                                                </div>
+                                                <div class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                                    <div class="flex items-center justify-between mb-1">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-bold text-bake-brown text-sm"><?= htmlspecialchars($reply['nickname'] ?: $reply['username']) ?></span>
+                                                            <span class="text-xs text-slate-400 font-medium"><?= date('d. m. Y H:i', strtotime($reply['created_at'])) ?></span>
+                                                        </div>
+                                                        
+                                                        <?php 
+                                                            $isReplyAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $reply['user_id'];
+                                                        ?>
+                                                        <?php if ($isReplyAuthor || $isAdmin): ?>
+                                                            <div class="flex items-center gap-3 opacity-0 group-hover/reply:opacity-100 transition-opacity">
+                                                                <?php if ($isReplyAuthor): ?>
+                                                                    <a href="<?= BASE_URL ?>/index.php?url=recipe/editComment/<?= $reply['id'] ?>" class="text-bake-blue hover:text-bake-brown transition-colors text-xs font-bold"><i class="fas fa-pen"></i></a>
+                                                                <?php endif; ?>
+                                                                
+                                                                <form action="<?= BASE_URL ?>/index.php?url=recipe/deleteComment/<?= $reply['id'] ?>" method="POST" onsubmit="return confirm('Opravdu smazat odpověď?')" class="inline-block m-0 p-0">
+                                                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                                    <button type="submit" class="bg-transparent border-0 text-red-400 hover:text-red-600 cursor-pointer p-0 transition-colors text-xs font-bold">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <p class="text-slate-700 text-sm leading-relaxed"><?= nl2br(htmlspecialchars($reply['text'])) ?></p>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -249,8 +307,7 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                 <?php endif; ?>
             </div>
         </div>
-
-    </div>
+        </div>
 </div>
 
 <style>
