@@ -69,11 +69,13 @@ class Recipe {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getByUserId(int $userId): array {
-        $sql = "SELECT r.*, c.name as category_name FROM recipes r LEFT JOIN categories c ON r.category_id = c.id WHERE r.created_by = :user_id ORDER BY r.created_at DESC";
-        $stmt = $this->db->prepare($sql); $stmt->execute([':user_id' => $userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+  public function getByUserId($userId) {
+    $sql = "SELECT * FROM recipes WHERE created_by = :user_id ORDER BY created_at DESC";
+    $stmt = $this->db->prepare($sql);
+    // Bindnutí parametru rovnou v execute
+    $stmt->execute([':user_id' => $userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public function getLikedByUserId(int $userId): array {
         $sql = "SELECT r.*, c.name as category_name FROM recipes r JOIN likes l ON r.id = l.recipe_id LEFT JOIN categories c ON r.category_id = c.id WHERE l.user_id = :user_id ORDER BY r.created_at DESC";

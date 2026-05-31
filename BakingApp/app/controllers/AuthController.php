@@ -84,10 +84,12 @@ class AuthController {
             $db = (new Database())->getConnection(); $userModel = new User($db);
             $user = $userModel->findByEmail($_POST['email']);
             
-            if ($user && password_verify($_POST['password'], $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = !empty($user['nickname']) ? $user['nickname'] : $user['username'];
-                $_SESSION['is_admin'] = (int)($user['is_admin'] ?? 0);
+           if ($user && password_verify($_POST['password'], $user['password'])) {
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_name'] = !empty($user['nickname']) ? $user['nickname'] : $user['username'];
+    
+    // OPRAVA: Kontrolujeme sloupec 'role'
+    $_SESSION['is_admin'] = (isset($user['role']) && $user['role'] === 'admin') ? 1 : 0;
 
                 $this->addSuccessMessage('Vítejte zpět!'); header('Location: ' . BASE_URL . '/index.php'); exit;
             } else { 

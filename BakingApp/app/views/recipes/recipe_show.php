@@ -132,9 +132,9 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
             <h3 class="font-bold text-slate-400 uppercase tracking-widest text-sm mb-6">Fotogalerie z pečení</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <?php foreach ($images as $img): ?>
-                    <a href="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" target="_blank" class="block rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:ring-4 ring-bake-blue/30 transition-all aspect-square bg-slate-50">
+                    <button type="button" onclick="openLightbox('<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>')" class="block w-full rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:ring-4 ring-bake-blue/30 transition-all aspect-square bg-slate-50 cursor-zoom-in">
                         <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($img) ?>" alt="Fotka receptu" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
-                    </a>
+                    </button>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -169,7 +169,7 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                         $simCover = !empty($simImages) ? $simImages[0] : null;
                     ?>
                     <a href="<?= BASE_URL ?>/index.php?url=recipe/show/<?= $similar['id'] ?>" class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-lg transition-all group flex items-center gap-4">
-                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-bake-cream shrink-0 border border-bake-cream">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden bg-bake-cream shrink-0 border border-bake-cream relative">
                             <?php if ($simCover): ?>
                                 <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($simCover) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
                             <?php else: ?>
@@ -191,13 +191,23 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
 
             <?php if (isset($_SESSION['user_id'])): ?>
                 <div class="bg-bake-cream/20 p-8 rounded-3xl border border-bake-cream mb-10">
-                    <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post">
+                    <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         <input type="hidden" name="recipe_id" value="<?= htmlspecialchars($recipe['id']) ?>">
+                        
                         <textarea name="text" rows="3" required placeholder="Jak se vám recept povedl? Podělte se o výsledek..." class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-bake-blue outline-none transition-all resize-none mb-4 text-slate-700"></textarea>
-                        <button type="submit" class="bg-bake-blue hover:bg-opacity-80 text-bake-brown px-8 py-3 rounded-2xl font-black transition shadow-sm">
-                            Odeslat hodnocení
-                        </button>
+                        
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                            <label class="cursor-pointer text-sm font-bold text-bake-blue hover:text-bake-brown transition-colors flex items-center gap-2">
+                                <i class="fas fa-camera text-xl"></i> Přidat fotku výtvoru
+                                <input type="file" name="comment_image" accept="image/*" class="hidden" onchange="document.getElementById('file-chosen-main').textContent = this.files[0].name">
+                            </label>
+                            <span id="file-chosen-main" class="text-xs text-slate-500 flex-1 ml-2"></span>
+                            
+                            <button type="submit" class="bg-bake-blue hover:bg-opacity-80 text-bake-brown px-8 py-3 rounded-2xl font-black transition shadow-sm w-full sm:w-auto">
+                                Odeslat hodnocení
+                            </button>
+                        </div>
                     </form>
                 </div>
             <?php else: ?>
@@ -238,22 +248,37 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                <p class="text-slate-700 leading-relaxed pr-10"><?= nl2br(htmlspecialchars($comment['text'])) ?></p>
+                                <p class="text-slate-700 leading-relaxed pr-10 mb-3"><?= nl2br(htmlspecialchars($comment['text'])) ?></p>
+                                
+                                <?php if (!empty($comment['image'])): ?>
+                                    <button type="button" onclick="openLightbox('<?= BASE_URL ?>/uploads/<?= htmlspecialchars($comment['image']) ?>')" class="block w-48 aspect-square rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-slate-200 cursor-zoom-in transition-all mb-3">
+                                        <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($comment['image']) ?>" alt="Výtvor od uživatele" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                    </button>
+                                <?php endif; ?>
                                 
                                 <?php if (isset($_SESSION['user_id'])): ?>
-                                    <button onclick="document.getElementById('reply-form-<?= $comment['id'] ?>').classList.toggle('hidden')" class="mt-3 text-sm font-bold text-bake-blue hover:text-bake-brown transition-colors">
+                                    <button onclick="document.getElementById('reply-form-<?= $comment['id'] ?>').classList.toggle('hidden')" class="mt-2 text-sm font-bold text-bake-blue hover:text-bake-brown transition-colors">
                                         <i class="fas fa-reply mr-1"></i> Odpovědět
                                     </button>
 
                                     <div id="reply-form-<?= $comment['id'] ?>" class="hidden mt-4 bg-bake-cream/20 p-5 rounded-2xl border border-bake-cream">
-                                        <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post">
+                                        <form action="<?= BASE_URL ?>/index.php?url=recipe/addComment" method="post" enctype="multipart/form-data">
                                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                             <input type="hidden" name="parent_id" value="<?= $comment['id'] ?>">
                                             <input type="hidden" name="recipe_id" value="<?= $recipe['id'] ?>">
                                             <textarea name="text" rows="2" required placeholder="Vaše odpověď..." class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-bake-blue outline-none transition-all resize-none mb-3 text-slate-700"></textarea>
-                                            <button type="submit" class="bg-bake-brown hover:bg-opacity-90 text-bake-cream px-6 py-2 rounded-xl font-bold transition shadow-sm text-sm">
-                                                Odeslat odpověď
-                                            </button>
+                                            
+                                            <div class="flex items-center justify-between">
+                                                <label class="cursor-pointer text-xs font-bold text-bake-blue hover:text-bake-brown transition-colors flex items-center gap-2">
+                                                    <i class="fas fa-camera"></i> Fotka
+                                                    <input type="file" name="comment_image" accept="image/*" class="hidden" onchange="document.getElementById('file-chosen-<?= $comment['id'] ?>').textContent = this.files[0].name">
+                                                </label>
+                                                <span id="file-chosen-<?= $comment['id'] ?>" class="text-xs text-slate-500 mr-auto ml-2"></span>
+                                                
+                                                <button type="submit" class="bg-bake-brown hover:bg-opacity-90 text-bake-cream px-6 py-2 rounded-xl font-bold transition shadow-sm text-sm">
+                                                    Odeslat odpověď
+                                                </button>
+                                            </div>
                                         </form>
                                     </div>
                                 <?php endif; ?>
@@ -290,7 +315,13 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
                                                             </div>
                                                         <?php endif; ?>
                                                     </div>
-                                                    <p class="text-slate-700 text-sm leading-relaxed"><?= nl2br(htmlspecialchars($reply['text'])) ?></p>
+                                                    <p class="text-slate-700 text-sm leading-relaxed mb-2"><?= nl2br(htmlspecialchars($reply['text'])) ?></p>
+                                                    
+                                                    <?php if (!empty($reply['image'])): ?>
+                                                        <button type="button" onclick="openLightbox('<?= BASE_URL ?>/uploads/<?= htmlspecialchars($reply['image']) ?>')" class="block w-32 aspect-square rounded-lg overflow-hidden shadow-sm hover:shadow-md border border-slate-200 cursor-zoom-in transition-all">
+                                                            <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($reply['image']) ?>" alt="Výtvor od uživatele" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
@@ -308,6 +339,11 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
             </div>
         </div>
         </div>
+</div>
+
+<div id="lightbox" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="this.classList.add('hidden')">
+    <img id="lightbox-img" src="" class="max-w-full max-h-full rounded-xl shadow-2xl transition-transform transform scale-95 duration-200" alt="Detail fotky">
+    <button class="absolute top-6 right-6 text-white/50 hover:text-white text-5xl font-light transition-colors">&times;</button>
 </div>
 
 <style>
@@ -374,6 +410,14 @@ $instructionsList = array_filter(array_map('trim', explode("\n", $recipe['instru
         result.classList.remove('hidden');
         if(type === 'g_to_cups') { result.innerText = "= " + (val / 120).toFixed(1) + " hrnků"; } 
         else { result.innerText = "= " + (val * 120).toFixed(0) + " g"; }
+    }
+
+    function openLightbox(src) {
+        const lightbox = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = src;
+        lightbox.classList.remove('hidden');
+        setTimeout(() => img.classList.replace('scale-95', 'scale-100'), 10);
     }
 </script>
 

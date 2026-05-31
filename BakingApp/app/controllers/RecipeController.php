@@ -118,7 +118,14 @@ class RecipeController {
             $category = (int)($_POST['category'] ?? 0);
             $prep_time = (int)($_POST['prep_time'] ?? 0);
             
-            $uploadedImages = $this->processImageUploads();
+           $uploadedImages = $this->processImageUploads();
+if (empty($uploadedImages)) {
+    $uploadedImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
+} else {
+    // Sloučíme staré obrázky s nově nahranými (místo smazání starých)
+    $oldImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
+    $uploadedImages = array_merge($oldImages, $uploadedImages);
+}
 
             require_once '../app/models/Database.php'; 
             require_once '../app/models/Recipe.php';
@@ -215,28 +222,36 @@ class RecipeController {
     }
 
     public function addComment() {
-        $this->requireAuth();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $recipeId = (int)($_POST['recipe_id'] ?? 0);
-            
-            // OPRAVA: Chytáme parent_id z formuláře, pokud tam je
-            $parentId = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
-            
-            $text = htmlspecialchars(trim($_POST['text'] ?? ''));
-            
-            if ($recipeId > 0 && !empty($text)) {
-                require_once '../app/models/Database.php'; 
-                require_once '../app/models/Comment.php';
-                $db = (new Database())->getConnection(); 
-                $commentModel = new Comment($db);
-                
-                // Předáváme i parentId
-                $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text, $parentId);
-                $this->addSuccessMessage('Komentář byl přidán.');
+    $this->requireAuth();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $recipeId = (int)($_POST['recipe_id'] ?? 0);
+        $parentId = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
+        $text = htmlspecialchars(trim($_POST['text'] ?? ''));
+        
+        $commentImage = null;
+        if (isset($_FILES['comment_image']) && $_FILES['comment_image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../public/uploads/';
+            $ext = strtolower(pathinfo($_FILES['comment_image']['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                $newName = 'user_photo_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES['comment_image']['tmp_name'], $uploadDir . $newName)) {
+                    $commentImage = $newName;
+                }
             }
-            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
         }
+        
+        if ($recipeId > 0 && !empty($text)) {
+            require_once '../app/models/Database.php'; 
+            require_once '../app/models/Comment.php';
+            $db = (new Database())->getConnection(); 
+            $commentModel = new Comment($db);
+            
+            $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text, $parentId, $commentImage);
+            $this->addSuccessMessage('Hodnocení bylo přidáno.');
+        }
+        header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
     }
+}
 
     public function editComment($id = null) {
         $this->requireAuth();

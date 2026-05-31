@@ -38,17 +38,17 @@ class Comment {
     }
 
     // OPRAVA: Přidáno zpracování parent_id
-    public function create(int $recipeId, int $userId, string $text, ?int $parentId = null): bool {
-        $sql = "INSERT INTO comments (recipe_id, user_id, text, parent_id) VALUES (:recipe_id, :user_id, :text, :parent_id)";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':recipe_id' => $recipeId,
-            ':user_id' => $userId,
-            ':text' => $text,
-            ':parent_id' => $parentId
-        ]);
-    }
-
+   public function create(int $recipeId, int $userId, string $text, ?int $parentId = null, ?string $image = null): bool {
+    $sql = "INSERT INTO comments (recipe_id, user_id, text, parent_id, image) VALUES (:recipe_id, :user_id, :text, :parent_id, :image)";
+    $stmt = $this->db->prepare($sql);
+    return $stmt->execute([
+        ':recipe_id' => $recipeId,
+        ':user_id' => $userId,
+        ':text' => $text,
+        ':parent_id' => $parentId,
+        ':image' => $image
+    ]);
+}
     public function update(int $id, string $text): bool {
         $sql = "UPDATE comments SET text = :text WHERE id = :id";
         $stmt = $this->db->prepare($sql);

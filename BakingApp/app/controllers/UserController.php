@@ -13,22 +13,35 @@ class UserController {
         require_once '../app/views/user/user_list.php';
     }
 
-    public function show($id = null) {
-        if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
-        require_once '../app/models/Database.php';
-        require_once '../app/models/User.php';
-        require_once '../app/models/Recipe.php';
-        
-        $db = (new Database())->getConnection();
-        $user = (new User($db))->findById((int)$id);
-        
-        if (!$user) { header('Location: ' . BASE_URL . '/index.php'); exit; }
-        
-        $recipeModel = new Recipe($db);
-        $userRecipes = $recipeModel->getByUserId((int)$id);
-        
-        require_once '../app/views/user/user_show.php';
+   public function show($id = null) {
+    if (!$id) {
+        header('Location: ' . BASE_URL . '/index.php?url=user/index');
+        exit;
     }
+
+    require_once '../app/models/Database.php';
+    require_once '../app/models/User.php';
+    require_once '../app/models/Recipe.php'; // Přidáno načtení modelu Recipe
+
+    $db = (new Database())->getConnection();
+    $userModel = new User($db);
+    $recipeModel = new Recipe($db); // Inicializace modelu
+    
+    $user = $userModel->findById($id);
+
+    if (!$user) {
+        $_SESSION['messages']['error'][] = 'Hledaný pekař neexistuje.';
+        header('Location: ' . BASE_URL . '/index.php?url=user/index');
+        exit;
+    }
+
+    // NOVÉ: Načtení receptů konkrétního uživatele
+    // Předpokládám, že máš v Recipe modelu metodu jako getByUserId nebo podobnou
+    $userRecipes = $recipeModel->getByUserId($id); 
+
+    // Vykreslení pohledu (view) a předání dat
+    require_once '../app/views/user/user_show.php';
+}
 
     // OPRAVENO: Mazání uživatelů nyní vyžaduje POST a CSRF token
     public function delete($id = null) {
