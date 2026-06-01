@@ -33,6 +33,11 @@ class RecipeController {
             $recipes = $recipeModel->getAll($sort, $limit, $offset);
         }
         
+require_once '../app/models/Tip.php';
+$tipModel = new Tip($db);
+$tips = $tipModel->getAll();
+// Poté následuje: require_once '../app/views/recipes/recipes_list.php';
+
         require_once '../app/views/recipes/recipes_list.php';
     }
 
@@ -310,6 +315,34 @@ if (empty($uploadedImages)) {
         $this->addSuccessMessage('Komentář smazán.');
         header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
     }
+
+
+public function createTip() {
+        $this->requireAuth();
+        require_once '../app/views/recipes/tip_create.php';
+    }
+
+    public function storeTip() {
+        $this->requireAuth();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $title = htmlspecialchars($_POST['title'] ?? '');
+            $content = htmlspecialchars($_POST['content'] ?? '');
+            $icon = htmlspecialchars($_POST['icon'] ?? 'fas fa-lightbulb'); // Výchozí ikona
+            
+            require_once '../app/models/Database.php';
+            require_once '../app/models/Tip.php';
+            $db = (new Database())->getConnection();
+            
+            if ((new Tip($db))->create($title, $content, $icon, $_SESSION['user_id'])) {
+                $this->addSuccessMessage('Super! Váš tip byl přidán.');
+            } else {
+                $this->addErrorMessage('Nastala chyba při ukládání tipu.');
+            }
+            header('Location: ' . BASE_URL . '/index.php');
+            exit;
+        }
+    }
+
 
     public function toggleLike() {
         header('Content-Type: application/json');
