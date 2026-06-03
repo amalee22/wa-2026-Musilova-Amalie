@@ -20,6 +20,15 @@ class AuthController {
             $lastName = trim($_POST['last_name'] ?? '');
             $nickname = trim($_POST['nickname'] ?? '');
             
+            // Uložení odeslaných dat (kromě hesel) pro případ chyby
+            $_SESSION['old_input'] = [
+                'username' => $username,
+                'email' => $email,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'nickname' => $nickname
+            ];
+            
             if (empty($username) || empty($email) || empty($password)) { 
                 $this->addErrorMessage('Vyplňte povinná pole.'); 
                 header('Location: ' . BASE_URL . '/index.php?url=auth/register'); 
@@ -41,6 +50,7 @@ class AuthController {
             $db = (new Database())->getConnection(); $userModel = new User($db);
             
             if ($userModel->register($username, $email, $password, $firstName, $lastName, $nickname)) {
+                unset($_SESSION['old_input']); // Vyčištění po úspěšné registraci
                 $this->addSuccessMessage('Registrace úspěšná.'); header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit;
             } else { 
                 $this->addErrorMessage('Email je již obsazen.'); header('Location: ' . BASE_URL . '/index.php?url=auth/register'); exit; 
@@ -50,7 +60,6 @@ class AuthController {
 
     public function updateProfile() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
-            // OPRAVENO: Validace CSRF tokenu při úpravě profilu
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
                 $this->addErrorMessage('Neplatný požadavek (CSRF ochrana).');
                 header('Location: ' . BASE_URL . '/index.php?url=auth/profile'); exit;
@@ -85,11 +94,9 @@ class AuthController {
             $user = $userModel->findByEmail($_POST['email']);
             
            if ($user && password_verify($_POST['password'], $user['password'])) {
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['user_name'] = !empty($user['nickname']) ? $user['nickname'] : $user['username'];
-    
-    // OPRAVA: Kontrolujeme sloupec 'role'
-    $_SESSION['is_admin'] = (isset($user['role']) && $user['role'] === 'admin') ? 1 : 0;
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_name'] = !empty($user['nickname']) ? $user['nickname'] : $user['username'];
+                $_SESSION['is_admin'] = (isset($user['role']) && $user['role'] === 'admin') ? 1 : 0;
 
                 $this->addSuccessMessage('Vítejte zpět!'); header('Location: ' . BASE_URL . '/index.php'); exit;
             } else { 

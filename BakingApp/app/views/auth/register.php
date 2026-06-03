@@ -1,14 +1,16 @@
-<?php require_once '../app/views/layout/header.php'; ?>
+<?php 
+require_once '../app/views/layout/header.php'; 
+$old = $_SESSION['old_input'] ?? [];
+unset($_SESSION['old_input']);
+?>
 
 <div class="max-w-xl mx-auto bg-white border border-bake-brown/10 rounded-[2rem] shadow-xl shadow-bake-brown/5 p-10 sm:p-14 mt-8 mb-16">
 
-    <!-- Brand mark -->
     <div class="flex items-center justify-center gap-3 mb-8">
         <i class="fas fa-cookie-bite text-2xl text-bake-brown"></i>
         <span class="font-display text-xl font-bold text-bake-brown tracking-tight">Overbaked</span>
     </div>
 
-    <!-- Heading -->
     <div class="mb-8 text-center">
         <h2 class="font-display text-3xl font-bold text-bake-brown mb-2">Nová registrace</h2>
         <p class="text-sm text-slate-400 font-light tracking-wide">Vytvořte si účet pro přidávání a hodnocení receptů.</p>
@@ -21,7 +23,7 @@
                 <label for="username" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
                     Uživatelské jméno <span class="text-bake-blue">*</span>
                 </label>
-                <input type="text" id="username" name="username" required placeholder="jannovak"
+                <input type="text" id="username" name="username" required placeholder="jannovak" value="<?= htmlspecialchars($old['username'] ?? '') ?>"
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
@@ -29,7 +31,7 @@
                 <label for="email" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
                     E-mail <span class="text-bake-blue">*</span>
                 </label>
-                <input type="email" id="email" name="email" required placeholder="jan@email.cz"
+                <input type="email" id="email" name="email" required placeholder="jan@email.cz" value="<?= htmlspecialchars($old['email'] ?? '') ?>"
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
@@ -49,7 +51,6 @@
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
-            <!-- Divider -->
             <div class="sm:col-span-2 flex items-center gap-4 py-1">
                 <div class="flex-1 h-px bg-bake-brown/10"></div>
                 <span class="text-[10px] font-medium text-slate-300 uppercase tracking-[0.09em] whitespace-nowrap">
@@ -62,7 +63,7 @@
                 <label for="first_name" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
                     Křestní jméno
                 </label>
-                <input type="text" id="first_name" name="first_name" placeholder="Jan"
+                <input type="text" id="first_name" name="first_name" placeholder="Jan" value="<?= htmlspecialchars($old['first_name'] ?? '') ?>"
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
@@ -70,7 +71,7 @@
                 <label for="last_name" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
                     Příjmení
                 </label>
-                <input type="text" id="last_name" name="last_name" placeholder="Novák"
+                <input type="text" id="last_name" name="last_name" placeholder="Novák" value="<?= htmlspecialchars($old['last_name'] ?? '') ?>"
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
@@ -79,7 +80,7 @@
                     Přezdívka
                     <span class="normal-case font-light text-slate-300 tracking-normal ml-1">(zobrazí se u komentářů)</span>
                 </label>
-                <input type="text" id="nickname" name="nickname" placeholder="Honzík"
+                <input type="text" id="nickname" name="nickname" placeholder="Honzík" value="<?= htmlspecialchars($old['nickname'] ?? '') ?>"
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 

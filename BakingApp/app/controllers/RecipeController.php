@@ -33,10 +33,9 @@ class RecipeController {
             $recipes = $recipeModel->getAll($sort, $limit, $offset);
         }
         
-require_once '../app/models/Tip.php';
-$tipModel = new Tip($db);
-$tips = $tipModel->getAll();
-// Poté následuje: require_once '../app/views/recipes/recipes_list.php';
+        require_once '../app/models/Tip.php';
+        $tipModel = new Tip($db);
+        $tips = $tipModel->getAll();
 
         require_once '../app/views/recipes/recipes_list.php';
     }
@@ -123,14 +122,7 @@ $tips = $tipModel->getAll();
             $category = (int)($_POST['category'] ?? 0);
             $prep_time = (int)($_POST['prep_time'] ?? 0);
             
-           $uploadedImages = $this->processImageUploads();
-if (empty($uploadedImages)) {
-    $uploadedImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
-} else {
-    // Sloučíme staré obrázky s nově nahranými (místo smazání starých)
-    $oldImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
-    $uploadedImages = array_merge($oldImages, $uploadedImages);
-}
+            $uploadedImages = $this->processImageUploads();
 
             require_once '../app/models/Database.php'; 
             require_once '../app/models/Recipe.php';
@@ -177,14 +169,8 @@ if (empty($uploadedImages)) {
             if (empty($uploadedImages)) {
                 $uploadedImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
             } else {
-                $oldImages = json_decode($existingRecipe['images'] ?? '[]', true);
-                if (!empty($oldImages)) {
-                    $uploadDir = __DIR__ . '/../../public/uploads/';
-                    foreach ($oldImages as $img) {
-                        $filePath = $uploadDir . $img;
-                        if (file_exists($filePath) && is_file($filePath)) { unlink($filePath); }
-                    }
-                }
+                $oldImages = json_decode($existingRecipe['images'] ?? '[]', true) ?: [];
+                $uploadedImages = array_merge($oldImages, $uploadedImages);
             }
 
             if ($recipeModel->update((int)$id, $title, $description, $ingredients, $instructions, $category, $prep_time, $uploadedImages)) { 
@@ -227,36 +213,36 @@ if (empty($uploadedImages)) {
     }
 
     public function addComment() {
-    $this->requireAuth();
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $recipeId = (int)($_POST['recipe_id'] ?? 0);
-        $parentId = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
-        $text = htmlspecialchars(trim($_POST['text'] ?? ''));
-        
-        $commentImage = null;
-        if (isset($_FILES['comment_image']) && $_FILES['comment_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../public/uploads/';
-            $ext = strtolower(pathinfo($_FILES['comment_image']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
-                $newName = 'user_photo_' . uniqid() . '.' . $ext;
-                if (move_uploaded_file($_FILES['comment_image']['tmp_name'], $uploadDir . $newName)) {
-                    $commentImage = $newName;
+        $this->requireAuth();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $recipeId = (int)($_POST['recipe_id'] ?? 0);
+            $parentId = !empty($_POST['parent_id']) ? (int)$_POST['parent_id'] : null;
+            $text = htmlspecialchars(trim($_POST['text'] ?? ''));
+            
+            $commentImage = null;
+            if (isset($_FILES['comment_image']) && $_FILES['comment_image']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = __DIR__ . '/../../public/uploads/';
+                $ext = strtolower(pathinfo($_FILES['comment_image']['name'], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                    $newName = 'user_photo_' . uniqid() . '.' . $ext;
+                    if (move_uploaded_file($_FILES['comment_image']['tmp_name'], $uploadDir . $newName)) {
+                        $commentImage = $newName;
+                    }
                 }
             }
-        }
-        
-        if ($recipeId > 0 && !empty($text)) {
-            require_once '../app/models/Database.php'; 
-            require_once '../app/models/Comment.php';
-            $db = (new Database())->getConnection(); 
-            $commentModel = new Comment($db);
             
-            $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text, $parentId, $commentImage);
-            $this->addSuccessMessage('Hodnocení bylo přidáno.');
+            if ($recipeId > 0 && !empty($text)) {
+                require_once '../app/models/Database.php'; 
+                require_once '../app/models/Comment.php';
+                $db = (new Database())->getConnection(); 
+                $commentModel = new Comment($db);
+                
+                $commentModel->create((int)$recipeId, (int)$_SESSION['user_id'], $text, $parentId, $commentImage);
+                $this->addSuccessMessage('Hodnocení bylo přidáno.');
+            }
+            header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
         }
-        header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
     }
-}
 
     public function editComment($id = null) {
         $this->requireAuth();
@@ -316,8 +302,7 @@ if (empty($uploadedImages)) {
         header('Location: ' . BASE_URL . '/index.php?url=recipe/show/' . (int)$recipeId); exit;
     }
 
-
-public function createTip() {
+    public function createTip() {
         $this->requireAuth();
         require_once '../app/views/recipes/tip_create.php';
     }
@@ -327,7 +312,7 @@ public function createTip() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $title = htmlspecialchars($_POST['title'] ?? '');
             $content = htmlspecialchars($_POST['content'] ?? '');
-            $icon = htmlspecialchars($_POST['icon'] ?? 'fas fa-lightbulb'); // Výchozí ikona
+            $icon = htmlspecialchars($_POST['icon'] ?? 'fas fa-lightbulb');
             
             require_once '../app/models/Database.php';
             require_once '../app/models/Tip.php';
@@ -343,6 +328,36 @@ public function createTip() {
         }
     }
 
+    public function deleteTip($id = null) {
+        $this->requireAuth();
+        if (!$id) { header('Location: ' . BASE_URL . '/index.php'); exit; }
+
+        require_once '../app/models/Database.php';
+        require_once '../app/models/Tip.php';
+        $db = (new Database())->getConnection();
+        $tipModel = new Tip($db);
+        $tip = $tipModel->getById((int)$id);
+
+        $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+
+        if (!$tip || ($tip['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
+            $this->addErrorMessage('Nemáte oprávnění smazat tento tip.');
+            header('Location: ' . BASE_URL . '/index.php'); exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                $this->addErrorMessage('Neplatný požadavek (CSRF).');
+            } else {
+                if ($tipModel->delete((int)$id)) {
+                    $this->addSuccessMessage('Tip byl úspěšně smazán.');
+                } else {
+                    $this->addErrorMessage('Nastala chyba při mazání tipu.');
+                }
+            }
+        }
+        header('Location: ' . BASE_URL . '/index.php'); exit;
+    }
 
     public function toggleLike() {
         header('Content-Type: application/json');
@@ -402,39 +417,35 @@ public function createTip() {
     }
 
     public function deleteImage($recipeId = null, $fileName = null) {
-    $this->requireAuth();
-    if (!$recipeId || !$fileName) { header('Location: ' . BASE_URL . '/index.php'); exit; }
+        $this->requireAuth();
+        if (!$recipeId || !$fileName) { header('Location: ' . BASE_URL . '/index.php'); exit; }
 
-    require_once '../app/models/Database.php';
-    require_once '../app/models/Recipe.php';
-    $db = (new Database())->getConnection();
-    $recipeModel = new Recipe($db);
-    $recipe = $recipeModel->getById((int)$recipeId);
+        require_once '../app/models/Database.php';
+        require_once '../app/models/Recipe.php';
+        $db = (new Database())->getConnection();
+        $recipeModel = new Recipe($db);
+        $recipe = $recipeModel->getById((int)$recipeId);
 
-    // Kontrola oprávnění (pouze autor nebo admin)
-    $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
-    if (!$recipe || ($recipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
-        $this->addErrorMessage('Nemáte oprávnění.');
-        header('Location: ' . BASE_URL . '/index.php'); exit;
+        $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+        if (!$recipe || ($recipe['created_by'] != $_SESSION['user_id'] && !$isAdmin)) {
+            $this->addErrorMessage('Nemáte oprávnění.');
+            header('Location: ' . BASE_URL . '/index.php'); exit;
+        }
+
+        $images = json_decode($recipe['images'] ?? '[]', true);
+        if (($key = array_search($fileName, $images)) !== false) {
+            unset($images[$key]);
+            $images = array_values($images);
+            
+            $filePath = __DIR__ . '/../../public/uploads/' . $fileName;
+            if (file_exists($filePath)) { unlink($filePath); }
+
+            $recipeModel->update((int)$recipeId, $recipe['title'], $recipe['description'], $recipe['ingredients'], $recipe['instructions'], $recipe['category_id'], $recipe['prep_time'], $images);
+            $this->addSuccessMessage('Obrázek byl smazán.');
+        }
+
+        header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . (int)$recipeId); exit;
     }
-
-    // Úprava pole obrázků v DB
-    $images = json_decode($recipe['images'] ?? '[]', true);
-    if (($key = array_search($fileName, $images)) !== false) {
-        unset($images[$key]);
-        $images = array_values($images); // reset indexů
-        
-        // Smazání fyzického souboru
-        $filePath = __DIR__ . '/../../public/uploads/' . $fileName;
-        if (file_exists($filePath)) { unlink($filePath); }
-
-        // Update DB
-        $recipeModel->update((int)$recipeId, $recipe['title'], $recipe['description'], $recipe['ingredients'], $recipe['instructions'], $recipe['category_id'], $recipe['prep_time'], $images);
-        $this->addSuccessMessage('Obrázek byl smazán.');
-    }
-
-    header('Location: ' . BASE_URL . '/index.php?url=recipe/edit/' . (int)$recipeId); exit;
-}
 
     protected function addSuccessMessage($message) { $_SESSION['messages']['success'][] = $message; }
     protected function addErrorMessage($message) { $_SESSION['messages']['error'][] = $message; }

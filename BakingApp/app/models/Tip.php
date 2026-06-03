@@ -16,6 +16,13 @@ class Tip {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getById(int $id) {
+        $sql = "SELECT * FROM tips WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function create(string $title, string $content, string $icon, int $userId): bool {
         $sql = "INSERT INTO tips (title, content, icon, created_by) VALUES (:title, :content, :icon, :created_by)";
         $stmt = $this->db->prepare($sql);
@@ -25,5 +32,11 @@ class Tip {
             ':icon' => $icon,
             ':created_by' => $userId
         ]);
+    }
+
+    public function delete(int $id): bool {
+        $sql = "DELETE FROM tips WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':id' => $id]);
     }
 }

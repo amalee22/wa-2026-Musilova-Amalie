@@ -254,8 +254,20 @@
                     <?php 
                         $bgGradient = ($i % 2 === 0) ? 'from-bake-blue/20 to-bake-cream/30 border-bake-blue/30' : 'from-bake-cream/50 to-white border-bake-cream';
                         $iconColor = ($i % 2 === 0) ? 'text-bake-blue bg-white' : 'text-bake-brown bg-bake-brown/10';
+                        $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+                        $isTipAuthor = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $tip['created_by'];
                     ?>
                     <div class="bg-gradient-to-br <?= $bgGradient ?> border rounded-[24px] p-8 flex flex-col gap-4 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                        
+                        <?php if ($isTipAuthor || $isAdmin): ?>
+                            <form action="<?= BASE_URL ?>/index.php?url=recipe/deleteTip/<?= $tip['id'] ?>" method="POST" onsubmit="return confirm('Opravdu chcete tento tip smazat?')" class="absolute top-6 right-6 z-20">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                <button type="submit" class="text-bake-brown/40 hover:text-red-500 bg-white/50 hover:bg-white w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm" title="Smazat tip">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </form>
+                        <?php endif; ?>
+
                         <div class="absolute -right-5 -bottom-5 text-bake-brown/5 text-[120px] transform rotate-12 group-hover:scale-110 transition-transform duration-500 leading-none pointer-events-none">
                             <i class="<?= htmlspecialchars($tip['icon'] ?? 'fas fa-lightbulb') ?>"></i>
                         </div>
