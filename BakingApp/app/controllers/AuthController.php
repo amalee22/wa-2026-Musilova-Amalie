@@ -9,7 +9,7 @@ class AuthController {
 
     public function register() { require_once '../app/views/auth/register.php'; }
 
-    public function storeUser() {
+   public function storeUser() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = trim($_POST['username'] ?? '');
             $email = trim($_POST['email'] ?? '');
@@ -19,6 +19,8 @@ class AuthController {
             $firstName = trim($_POST['first_name'] ?? '');
             $lastName = trim($_POST['last_name'] ?? '');
             $nickname = trim($_POST['nickname'] ?? '');
+            $region = trim($_POST['region'] ?? '');
+            $city = trim($_POST['city'] ?? '');
             
             // Uložení odeslaných dat (kromě hesel) pro případ chyby
             $_SESSION['old_input'] = [
@@ -26,10 +28,12 @@ class AuthController {
                 'email' => $email,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
-                'nickname' => $nickname
+                'nickname' => $nickname,
+                'region' => $region,
+                'city' => $city
             ];
             
-            if (empty($username) || empty($email) || empty($password)) { 
+            if (empty($username) || empty($email) || empty($password) || empty($region)) { 
                 $this->addErrorMessage('Vyplňte povinná pole.'); 
                 header('Location: ' . BASE_URL . '/index.php?url=auth/register'); 
                 exit; 
@@ -49,7 +53,7 @@ class AuthController {
             require_once '../app/models/Database.php'; require_once '../app/models/User.php';
             $db = (new Database())->getConnection(); $userModel = new User($db);
             
-            if ($userModel->register($username, $email, $password, $firstName, $lastName, $nickname)) {
+            if ($userModel->register($username, $email, $password, $firstName, $lastName, $nickname, $region, $city)) {
                 unset($_SESSION['old_input']); // Vyčištění po úspěšné registraci
                 $this->addSuccessMessage('Registrace úspěšná.'); header('Location: ' . BASE_URL . '/index.php?url=auth/login'); exit;
             } else { 
@@ -58,7 +62,7 @@ class AuthController {
         }
     }
 
-    public function updateProfile() {
+   public function updateProfile() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
             if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
                 $this->addErrorMessage('Neplatný požadavek (CSRF ochrana).');
@@ -72,8 +76,15 @@ class AuthController {
                 'nickname' => trim($_POST['nickname'] ?? ''),
                 'first_name' => trim($_POST['first_name'] ?? ''),
                 'last_name' => trim($_POST['last_name'] ?? ''),
-                'bio' => trim($_POST['bio'] ?? '')
+                'bio' => trim($_POST['bio'] ?? ''),
+                'region' => trim($_POST['region'] ?? ''),
+                'city' => trim($_POST['city'] ?? '')
             ];
+
+            if (empty($data['region'])) {
+                $this->addErrorMessage('Kraj je povinný údaj.');
+                header('Location: ' . BASE_URL . '/index.php?url=auth/profile'); exit;
+            }
             
             if ((new User($db))->updateProfile($_SESSION['user_id'], $data)) {
                 $_SESSION['user_name'] = !empty($data['nickname']) ? $data['nickname'] : $_SESSION['user_name'];
@@ -84,7 +95,6 @@ class AuthController {
             header('Location: ' . BASE_URL . '/index.php?url=auth/profile'); exit;
         }
     }
-
     public function login() { require_once '../app/views/auth/login.php'; }
 
     public function authenticate() {

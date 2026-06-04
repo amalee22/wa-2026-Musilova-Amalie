@@ -16,7 +16,7 @@
                 <label for="title" class="block text-sm font-semibold text-bake-brown mb-2">Název receptu <span class="text-bake-blue">*</span></label>
                 <input type="text" id="title" name="title" value="<?= htmlspecialchars($recipe['title']) ?>" required class="w-full bg-bake-cream/30 border-0 text-slate-900 rounded-xl px-4 py-3.5 ring-1 ring-inset ring-bake-cream focus:ring-2 focus:ring-bake-blue transition-all">
             </div>
-
+   
             <div>
                 <label for="category" class="block text-sm font-semibold text-bake-brown mb-2">Kategorie <span class="text-bake-blue">*</span></label>
                 <select id="category" name="category" required class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3.5 ring-1 ring-inset ring-bake-cream focus:ring-2 focus:ring-bake-blue transition-all">

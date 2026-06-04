@@ -7,7 +7,7 @@
         <div class="absolute -top-20 -right-20 w-64 h-64 bg-bake-cream/30 rounded-full blur-3xl z-0"></div>
         <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-bake-blue/10 rounded-full blur-3xl z-0"></div>
 
-        <div class="relative z-10">
+       <div class="relative z-10">
             <!-- Avatar -->
             <div class="w-28 h-28 mx-auto bg-bake-blue/20 rounded-full flex items-center justify-center mb-6 border-4 border-bake-cream shadow-sm">
                 <span class="font-display text-5xl font-bold text-bake-brown">
@@ -21,9 +21,22 @@
             </h2>
             
             <?php if (!empty($user['first_name']) || !empty($user['last_name'])): ?>
-                <p class="text-slate-400 font-medium text-lg mb-6">
+                <p class="text-slate-400 font-medium text-lg mb-2">
                     <?= htmlspecialchars(trim($user['first_name'] . ' ' . $user['last_name'])) ?>
                 </p>
+            <?php else: ?>
+                <div class="mb-2"></div>
+            <?php endif; ?>
+
+            <!-- LOKACE (NOVÉ) -->
+            <?php if (!empty($user['region'])): ?>
+                <div class="flex items-center justify-center gap-2 text-bake-brown/70 font-medium mb-6">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>
+                        <?= !empty($user['city']) ? htmlspecialchars($user['city']) . ', ' : '' ?>
+                        <?= htmlspecialchars($user['region']) ?>
+                    </span>
+                </div>
             <?php else: ?>
                 <div class="mb-6"></div>
             <?php endif; ?>
@@ -42,9 +55,7 @@
                     Pekařem od: <span class="font-semibold text-slate-600"><?= date('d. m. Y', strtotime($user['created_at'])) ?></span>
                 </p>
             </div>
-            
         </div>
-    </div>
     
 <div class="mt-16 mb-8">
         <h3 class="font-display text-3xl font-bold text-bake-brown mb-8 text-center">

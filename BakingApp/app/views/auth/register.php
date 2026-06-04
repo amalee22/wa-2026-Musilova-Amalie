@@ -84,6 +84,38 @@ unset($_SESSION['old_input']);
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
             </div>
 
+
+            <div class="flex flex-col gap-1.5">
+                <label for="region" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
+                    Kraj <span class="text-bake-blue">*</span>
+                </label>
+                <select id="region" name="region" required
+                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all">
+                    <option value="">-- Vyberte kraj --</option>
+                    <option value="Hlavní město Praha" <?= ($old['region'] ?? '') === 'Hlavní město Praha' ? 'selected' : '' ?>>Hlavní město Praha</option>
+                    <option value="Středočeský kraj" <?= ($old['region'] ?? '') === 'Středočeský kraj' ? 'selected' : '' ?>>Středočeský kraj</option>
+                    <option value="Jihočeský kraj" <?= ($old['region'] ?? '') === 'Jihočeský kraj' ? 'selected' : '' ?>>Jihočeský kraj</option>
+                    <option value="Plzeňský kraj" <?= ($old['region'] ?? '') === 'Plzeňský kraj' ? 'selected' : '' ?>>Plzeňský kraj</option>
+                    <option value="Karlovarský kraj" <?= ($old['region'] ?? '') === 'Karlovarský kraj' ? 'selected' : '' ?>>Karlovarský kraj</option>
+                    <option value="Ústecký kraj" <?= ($old['region'] ?? '') === 'Ústecký kraj' ? 'selected' : '' ?>>Ústecký kraj</option>
+                    <option value="Liberecký kraj" <?= ($old['region'] ?? '') === 'Liberecký kraj' ? 'selected' : '' ?>>Liberecký kraj</option>
+                    <option value="Královéhradecký kraj" <?= ($old['region'] ?? '') === 'Královéhradecký kraj' ? 'selected' : '' ?>>Královéhradecký kraj</option>
+                    <option value="Pardubický kraj" <?= ($old['region'] ?? '') === 'Pardubický kraj' ? 'selected' : '' ?>>Pardubický kraj</option>
+                    <option value="Kraj Vysočina" <?= ($old['region'] ?? '') === 'Kraj Vysočina' ? 'selected' : '' ?>>Kraj Vysočina</option>
+                    <option value="Jihomoravský kraj" <?= ($old['region'] ?? '') === 'Jihomoravský kraj' ? 'selected' : '' ?>>Jihomoravský kraj</option>
+                    <option value="Olomoucký kraj" <?= ($old['region'] ?? '') === 'Olomoucký kraj' ? 'selected' : '' ?>>Olomoucký kraj</option>
+                    <option value="Zlínský kraj" <?= ($old['region'] ?? '') === 'Zlínský kraj' ? 'selected' : '' ?>>Zlínský kraj</option>
+                    <option value="Moravskoslezský kraj" <?= ($old['region'] ?? '') === 'Moravskoslezský kraj' ? 'selected' : '' ?>>Moravskoslezský kraj</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label for="city" class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
+                    Město
+                </label>
+                <input type="text" id="city" name="city" placeholder="Např. Liberec" value="<?= htmlspecialchars($old['city'] ?? '') ?>"
+                       class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all placeholder:text-bake-brown/25 placeholder:font-light">
+            </div>
         </div>
 
         <div class="mt-8">

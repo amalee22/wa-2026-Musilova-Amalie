@@ -48,11 +48,36 @@
                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all">
             </div>
 
-            <div class="md:col-span-2 flex flex-col gap-1.5">
-                <label class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">Bio / O mně</label>
-                <textarea name="bio" rows="3"
-                          class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all resize-none placeholder:text-bake-brown/25 placeholder:font-light"
-                          placeholder="Napište něco o sobě..."><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+           <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
+                    Kraj <span class="text-bake-blue">*</span>
+                </label>
+                <select name="region" required
+                        class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all">
+                    <option value="">-- Vyberte kraj --</option>
+                    <option value="Hlavní město Praha" <?= ($user['region'] ?? '') === 'Hlavní město Praha' ? 'selected' : '' ?>>Hlavní město Praha</option>
+                    <option value="Středočeský kraj" <?= ($user['region'] ?? '') === 'Středočeský kraj' ? 'selected' : '' ?>>Středočeský kraj</option>
+                    <option value="Jihočeský kraj" <?= ($user['region'] ?? '') === 'Jihočeský kraj' ? 'selected' : '' ?>>Jihočeský kraj</option>
+                    <option value="Plzeňský kraj" <?= ($user['region'] ?? '') === 'Plzeňský kraj' ? 'selected' : '' ?>>Plzeňský kraj</option>
+                    <option value="Karlovarský kraj" <?= ($user['region'] ?? '') === 'Karlovarský kraj' ? 'selected' : '' ?>>Karlovarský kraj</option>
+                    <option value="Ústecký kraj" <?= ($user['region'] ?? '') === 'Ústecký kraj' ? 'selected' : '' ?>>Ústecký kraj</option>
+                    <option value="Liberecký kraj" <?= ($user['region'] ?? '') === 'Liberecký kraj' ? 'selected' : '' ?>>Liberecký kraj</option>
+                    <option value="Královéhradecký kraj" <?= ($user['region'] ?? '') === 'Královéhradecký kraj' ? 'selected' : '' ?>>Královéhradecký kraj</option>
+                    <option value="Pardubický kraj" <?= ($user['region'] ?? '') === 'Pardubický kraj' ? 'selected' : '' ?>>Pardubický kraj</option>
+                    <option value="Kraj Vysočina" <?= ($user['region'] ?? '') === 'Kraj Vysočina' ? 'selected' : '' ?>>Kraj Vysočina</option>
+                    <option value="Jihomoravský kraj" <?= ($user['region'] ?? '') === 'Jihomoravský kraj' ? 'selected' : '' ?>>Jihomoravský kraj</option>
+                    <option value="Olomoucký kraj" <?= ($user['region'] ?? '') === 'Olomoucký kraj' ? 'selected' : '' ?>>Olomoucký kraj</option>
+                    <option value="Zlínský kraj" <?= ($user['region'] ?? '') === 'Zlínský kraj' ? 'selected' : '' ?>>Zlínský kraj</option>
+                    <option value="Moravskoslezský kraj" <?= ($user['region'] ?? '') === 'Moravskoslezský kraj' ? 'selected' : '' ?>>Moravskoslezský kraj</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] font-medium text-slate-400 uppercase tracking-[0.07em]">
+                    Město
+                </label>
+                <input type="text" name="city" placeholder="Např. Liberec" value="<?= htmlspecialchars($user['city'] ?? '') ?>"
+                       class="w-full bg-bake-cream/30 border-0 rounded-xl px-4 py-3 text-bake-brown text-sm ring-1 ring-inset ring-bake-brown/20 focus:ring-2 focus:ring-bake-blue transition-all">
             </div>
 
             <div class="md:col-span-2 flex gap-3 pt-2">

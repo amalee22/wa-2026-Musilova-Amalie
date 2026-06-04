@@ -9,10 +9,10 @@ class App {
     public function __construct() {
         // Generování CSRF tokenu do session (pokud tam ještě není)
         if (empty($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); //vytvoření náhodného bezpečného řetězce čísel - kryptograficky 
         }
 
-        $url = $this->parseUrl();
+        $url = $this->parseUrl();   
 
         if (isset($url[0])) {
             // Převod url (např. auth) na AuthController

@@ -119,10 +119,22 @@
                         <?= $displayName ?>
                     </h3>
 
-                    <!-- Real name -->
+                  <!-- Real name -->
                     <?php if ($u['first_name'] || $u['last_name']): ?>
-                        <p class="relative z-10 text-xs text-slate-400 font-medium mb-4">
+                        <p class="relative z-10 text-xs text-slate-400 font-medium mb-1">
                             <?= htmlspecialchars(trim($u['first_name'] . ' ' . $u['last_name'])) ?>
+                        </p>
+                    <?php else: ?>
+                        <div class="mb-1"></div>
+                    <?php endif; ?>
+
+                    <!-- LOKACE NA KARTĚ (NOVÉ) -->
+                    <?php if (!empty($u['region'])): ?>
+                        <p class="relative z-10 text-xs text-bake-brown/60 mb-4 flex items-center gap-1">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>
+                                <?= !empty($u['city']) ? htmlspecialchars($u['city']) . ', ' : '' ?><?= htmlspecialchars($u['region']) ?>
+                            </span>
                         </p>
                     <?php else: ?>
                         <div class="mb-4"></div>

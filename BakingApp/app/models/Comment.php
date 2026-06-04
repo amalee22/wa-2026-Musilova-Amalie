@@ -36,7 +36,7 @@ class Comment {
         }
         return $threaded;
     }
-
+  
     // OPRAVA: Přidáno zpracování parent_id
    public function create(int $recipeId, int $userId, string $text, ?int $parentId = null, ?string $image = null): bool {
     $sql = "INSERT INTO comments (recipe_id, user_id, text, parent_id, image) VALUES (:recipe_id, :user_id, :text, :parent_id, :image)";
